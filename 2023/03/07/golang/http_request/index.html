@@ -1,0 +1,789 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Lamber Chen">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="主要记录HTTP请求在net包中经历的关键节点，基于go1.19.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang-浅析net库http请求处理流程">
+<meta property="og:url" content="https://lamber92.github.io/2023/03/07/golang/http_request/index.html">
+<meta property="og:site_name" content="Lamber的学习笔记">
+<meta property="og:description" content="主要记录HTTP请求在net包中经历的关键节点，基于go1.19.1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lamber92.github.io/2023/03/07/golang/http_request/conn.jpg">
+<meta property="article:published_time" content="2023-03-07T13:01:37.000Z">
+<meta property="article:modified_time" content="2023-03-09T07:16:44.694Z">
+<meta property="article:author" content="Lamber Chen">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="net">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lamber92.github.io/2023/03/07/golang/http_request/conn.jpg">
+  
+  
+  
+  <title>Golang-浅析net库http请求处理流程 - Lamber的学习笔记</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"lamber92.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":3},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"zPUsZUPeBQSuuuPubrF7oUya-gzGzoHsz","app_key":"Ru7EOypuGHkIcmxERkIJ26Cv","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 50vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Lamber的学习笔记</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/go.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Golang-浅析net库http请求处理流程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:01" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.3k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Golang-浅析net库http请求处理流程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Golang-浅析net库http请求处理流程"><a href="#Golang-浅析net库http请求处理流程" class="headerlink" title="Golang-浅析net库http请求处理流程"></a>Golang-浅析net库http请求处理流程</h1><p>主要记录HTTP请求在net包中经历的关键节点，基于go1.19.1</p>
+<p>学习net包中使用 预分配内存、sync.Pool 提升性能技巧，以及其他优秀的设计思想。</p>
+<h2 id="1-管理TCP连接"><a href="#1-管理TCP连接" class="headerlink" title="1. 管理TCP连接"></a>1. 管理TCP连接</h2><p>什么epoll、三次握手这些八股文不提了，这里从 <code>Serve()</code> 开始记录；</p>
+<p>在 <strong>net&#x2F;http&#x2F;server.go</strong> 的 <code>func (srv *Server) Serve(l net.Listener) error</code> 方法中，关注以下流程：	</p>
+<p><img src="conn.jpg" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><code>l.Accept()</code> 得到一个 <code>*net.TCPConn</code> 类型的指针 <strong>rw</strong></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(srv *Server)</span></span> Serve(l net.Listener) <span class="hljs-type">error</span> &#123;<br>    .......<br>    <span class="hljs-keyword">for</span> &#123;<br>        rw, err := l.Accept()<br>        ......<br>        c := srv.newConn(rw)<br>        c.setState(c.rwc, StateNew, runHooks) <span class="hljs-comment">// before Serve can return</span><br>        <span class="hljs-keyword">go</span> c.serve(connCtx)<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>这个*net.TCPConn是个什么东西？可以稍稍看看里面</p>
+<ul>
+<li>net&#x2F;tcpsock.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// TCPConn is an implementation of the Conn interface for TCP network</span><br><span class="hljs-comment">// connections.</span><br><span class="hljs-keyword">type</span> TCPConn <span class="hljs-keyword">struct</span> &#123;<br>	conn<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>内部嵌套conn，net&#x2F;net.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> conn <span class="hljs-keyword">struct</span> &#123;<br>	fd *netFD <span class="hljs-comment">// &lt;--找到这个命名就知道对了</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>net&#x2F;fd_posix.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Network file descriptor.</span><br><span class="hljs-keyword">type</span> netFD <span class="hljs-keyword">struct</span> &#123;<br>	pfd poll.FD <span class="hljs-comment">// &lt;--找到稍微根源的东西了，这里先不深入了</span><br><br>	<span class="hljs-comment">// immutable until Close</span><br>	family      <span class="hljs-type">int</span><br>	sotype      <span class="hljs-type">int</span><br>	isConnected <span class="hljs-type">bool</span> <span class="hljs-comment">// handshake completed or use of association with peer</span><br>	net         <span class="hljs-type">string</span><br>	laddr       Addr<br>	raddr       Addr<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>在 <code>srv.newConn(rw)</code> 中包装并返回 <code>server.conn</code> 对象指针（下面简称 <strong>conn</strong>），其中 server.conn.<strong>rwc</strong> 指向这个 <strong>rw</strong></p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Create new connection from rwc.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(srv *Server)</span></span> newConn(rwc net.Conn) *conn &#123;<br>	c := &amp;conn&#123;<br>		server: srv, <span class="hljs-comment">// 保存Server的指针，这种设计很多见，这里用于处理连接状态变更后统一使用server.ConnState进行回调等等动作</span><br>        rwc:    rwc, <span class="hljs-comment">// Accept()得到的*net.TCPConn</span><br>	&#125;<br>	<span class="hljs-keyword">if</span> debugServerConnections &#123;<br>		c.rwc = newLoggingConn(<span class="hljs-string">&quot;server&quot;</span>, c.rwc)<br>	&#125;<br>	<span class="hljs-keyword">return</span> c<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>经过 <code>c.setState()</code> 会将 <strong>rw</strong> 记录在 <code>server.activeConn</code> 中</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *Server)</span></span> trackConn(c *conn, add <span class="hljs-type">bool</span>) &#123;<br>	s.mu.Lock()<br>	<span class="hljs-keyword">defer</span> s.mu.Unlock()<br>	<span class="hljs-keyword">if</span> s.activeConn == <span class="hljs-literal">nil</span> &#123;<br>		s.activeConn = <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[*conn]<span class="hljs-keyword">struct</span>&#123;&#125;)<br>	&#125;<br>	<span class="hljs-keyword">if</span> add &#123;<br>        <span class="hljs-comment">// 对于新增conn首次设置状态走这里，将conn指针保存到server的活跃集合中。</span><br>        <span class="hljs-comment">// 此处实现了Server实例对conn后续管理的前提。</span><br>		s.activeConn[c] = <span class="hljs-keyword">struct</span>&#123;&#125;&#123;&#125;<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		<span class="hljs-built_in">delete</span>(s.activeConn, c)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>并且 <strong>conn</strong> 会更新当前状态，这个状态使用一个 <strong>原子变量</strong> 存储保证一致性</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *conn)</span></span> setState(nc net.Conn, state ConnState, runHook <span class="hljs-type">bool</span>) &#123;<br>	srv := c.server<br>	<span class="hljs-keyword">switch</span> state &#123;<br>	<span class="hljs-keyword">case</span> StateNew:<br>		srv.trackConn(c, <span class="hljs-literal">true</span>) <span class="hljs-comment">// 见上文</span><br>	<span class="hljs-keyword">case</span> StateHijacked, StateClosed:<br>		srv.trackConn(c, <span class="hljs-literal">false</span>)<br>	&#125;<br>	<span class="hljs-keyword">if</span> state &gt; <span class="hljs-number">0xff</span> || state &lt; <span class="hljs-number">0</span> &#123;<br>		<span class="hljs-built_in">panic</span>(<span class="hljs-string">&quot;internal error&quot;</span>)<br>	&#125;<br>	packedState := <span class="hljs-type">uint64</span>(time.Now().Unix()&lt;&lt;<span class="hljs-number">8</span>) | <span class="hljs-type">uint64</span>(state) <span class="hljs-comment">// 低8位保存当前状态，8位前保存变更时间戳</span><br>	atomic.StoreUint64(&amp;c.curState.atomic, packedState) <span class="hljs-comment">// 更新当前状态</span><br>	<span class="hljs-keyword">if</span> !runHook &#123;<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-keyword">if</span> hook := srv.ConnState; hook != <span class="hljs-literal">nil</span> &#123; <span class="hljs-comment">// 这里会用到srv，如果Server有外置的钩子，conn每一次状态变更，都会在这里回调通知</span><br>		hook(nc, state)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li><p>最后这个 <strong>conn</strong> 带着一个”有故事的”上下文，在全新的goroutine中执行；</p>
+<ul>
+<li>这个上下文的前置处理有点东西，有很强的扩展性，简单记录一下</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(srv *Server)</span></span> Serve(l net.Listener) <span class="hljs-type">error</span> &#123;<br>    ......<br>    origListener := l<br>    ......<br>    baseCtx := context.Background() <span class="hljs-comment">// 先获取一个平平无奇的上下文</span><br>    <span class="hljs-keyword">if</span> srv.BaseContext != <span class="hljs-literal">nil</span> &#123;<br>        <span class="hljs-comment">// 这里可以利用srv指定的基础上下文获取方法替代原始baseCtx，是指Server层级的Context处理过程。</span><br>        <span class="hljs-comment">// 这里的l可以有很多种实例，这里是tcp，也可以是udp、uds等。</span><br>        baseCtx = srv.BaseContext(origListener)<br>        <span class="hljs-keyword">if</span> baseCtx == <span class="hljs-literal">nil</span> &#123;<br>            <span class="hljs-built_in">panic</span>(<span class="hljs-string">&quot;BaseContext returned a nil context&quot;</span>)<br>        &#125;<br>    &#125;<br>    ......<br>    <span class="hljs-comment">// 这里使用一个*valueCtx将baseCtx包裹在内，并使用ServerContextKey与srv的指针存储kv，方便在任何带有该上下文的方法中得到srv，可以说非常灵活。</span><br>    ctx := context.WithValue(baseCtx, ServerContextKey, srv)<br>    <span class="hljs-keyword">for</span> &#123;<br>        connCtx := ctx<br>        <span class="hljs-comment">// 这里利用srv指定Connect层级的Context处理过程，与上文的BaseContext相互照应，这种分离层级策略使得ctx的特殊处理更为细致与明确。</span><br>        <span class="hljs-comment">// 方便针对各种http框架的context在此处进行特殊业务处理。</span><br>        <span class="hljs-keyword">if</span> cc := srv.ConnContext; cc != <span class="hljs-literal">nil</span> &#123;<br>            connCtx = cc(connCtx, rw)<br>            <span class="hljs-keyword">if</span> connCtx == <span class="hljs-literal">nil</span> &#123;<br>                <span class="hljs-built_in">panic</span>(<span class="hljs-string">&quot;ConnContext returned nil&quot;</span>)<br>            &#125;<br>        &#125;<br>        ......<br>        c := srv.newConn(rw)<br>        ......<br>        <span class="hljs-keyword">go</span> c.serve(connCtx) <span class="hljs-comment">// 最终ctx被带人到下一步的请求处理中</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="2-读取请求内容"><a href="#2-读取请求内容" class="headerlink" title="2. 读取请求内容"></a>2. 读取请求内容</h2><h3 id="2-1-主流程"><a href="#2-1-主流程" class="headerlink" title="2.1. 主流程"></a>2.1. 主流程</h3><ul>
+<li>从 <code>func (c *conn) serve(ctx context.Context)</code> 进去主要关注以下流程：</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *conn)</span></span> serve(ctx context.Context) &#123;<br>    ......<br>    <span class="hljs-comment">// 连接退出善后处理流程</span><br>    <span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>        <span class="hljs-comment">// 先来一个recover，防止本goroutine发送panic导致主goroutine退出</span><br>		<span class="hljs-keyword">if</span> err := <span class="hljs-built_in">recover</span>(); err != <span class="hljs-literal">nil</span> &amp;&amp; err != ErrAbortHandler &#123;<br>            <span class="hljs-comment">// 这里是打印一些panic的堆栈信息</span><br>			<span class="hljs-keyword">const</span> size = <span class="hljs-number">64</span> &lt;&lt; <span class="hljs-number">10</span><br>			buf := <span class="hljs-built_in">make</span>([]<span class="hljs-type">byte</span>, size)<br>			buf = buf[:runtime.Stack(buf, <span class="hljs-literal">false</span>)]<br>			c.server.logf(<span class="hljs-string">&quot;http: panic serving %v: %v\n%s&quot;</span>, c.remoteAddr, err, buf)<br>		&#125;<br>        <span class="hljs-comment">// 如果没有在外部调用劫持请求，将调用close方法释放资源，并更细连接状态为 Close(结束)</span><br>        <span class="hljs-comment">// 到这里可能疑惑：</span><br>        <span class="hljs-comment">//     如果劫持了，那么资源怎么释放？答案是劫持方法会返回*conn，需要在劫持处理完成后手工调用conn.Close()方法释放资源，否则出现资源泄露！</span><br>		<span class="hljs-keyword">if</span> !c.hijacked() &#123;<br>			c.<span class="hljs-built_in">close</span>()<br>			c.setState(c.rwc, StateClosed, runHooks)<br>		&#125;<br>	&#125;()<br>    ......<br>    c.r = &amp;connReader&#123;conn: c&#125;<br>    <span class="hljs-comment">// 申请内存空间，用于存储请求body数据</span><br>	c.bufr = newBufioReader(c.r)<br>    ......<br>    ......<br>    <span class="hljs-comment">// 真正的核心流程开始，分6个主要流程</span><br>    <span class="hljs-keyword">for</span> &#123;<br>        <span class="hljs-comment">// 1.解析请求内容，并构造、填充req与resp信息对象</span><br>        w, err := c.readRequest(ctx)<br>        ......<br>        <span class="hljs-comment">// 2.通过回调的方式经过如洋葱一般的各层http框架的中间件再到达真实业务逻辑层，最终又原路返回</span><br>        serverHandler&#123;c.server&#125;.ServeHTTP(w, w.req)<br>        ......<br>        <span class="hljs-comment">// 3.请求处理完成，重置各种请求状态、释放各种临时资源</span><br>        w.finishRequest()<br>        <span class="hljs-comment">// 4.判断连接是否可重用，不可重用则直接返回释放连接</span><br>        <span class="hljs-keyword">if</span> !w.shouldReuseConnection() &#123;<br>            <span class="hljs-keyword">if</span> w.requestBodyLimitHit || w.closedRequestBodyEarly() &#123;<br>                <span class="hljs-comment">// 发送FIN报文，主动关闭连接，并等待一定时间(这里是500ms)，等待客户端将未处理的数据处理完</span><br>		        c.closeWriteAndWait()<br>            &#125;<br>        <span class="hljs-keyword">return</span><br>		&#125;<br>        <span class="hljs-comment">// 5.更新连接状态为 Idle (已完成)</span><br>		c.setState(c.rwc, StateIdle, runHooks)<br>        <span class="hljs-comment">// 6.如果请求没有设置 keep_alive 选项，则直接结束连接</span><br>        <span class="hljs-comment">// 反之保持连接，等待下一次请求</span><br>        <span class="hljs-keyword">if</span> !w.conn.server.doKeepAlives() &#123;<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-2-请求数据解析-x2F-存储流程"><a href="#2-2-请求数据解析-x2F-存储流程" class="headerlink" title="2.2. 请求数据解析&#x2F;存储流程"></a>2.2. 请求数据解析&#x2F;存储流程</h3><ul>
+<li><p>申请存储数据的内存缓冲区</p>
+<ul>
+<li>net&#x2F;http&#x2F;server.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newBufioReader</span><span class="hljs-params">(r io.Reader)</span></span> *bufio.Reader &#123;<br>    <span class="hljs-comment">// 这里可以明白，这个内存首先尝试在一个sync.Pool中获取，说明后面逻辑中有将资源置入缓冲池里复用，避免频繁GC</span><br>    <span class="hljs-comment">// 在conn.close()和conn.closeWriteAndWait()都会将首次申请的缓冲区内存Put到池中，等待下一次连接重用</span><br>	<span class="hljs-keyword">if</span> v := bufioReaderPool.Get(); v != <span class="hljs-literal">nil</span> &#123;<br>		br := v.(*bufio.Reader)<br>		br.Reset(r)<br>		<span class="hljs-keyword">return</span> br<br>	&#125;<br>	<span class="hljs-keyword">return</span> bufio.NewReader(r) <span class="hljs-comment">// &lt;--首次处理一个连接的请求时没有缓冲池，会真正申请一块连续内存</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>bufio&#x2F;bufio.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">const</span> (<br>	defaultBufSize = <span class="hljs-number">4096</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewReader</span><span class="hljs-params">(rd io.Reader)</span></span> *Reader &#123;<br>	<span class="hljs-keyword">return</span> NewReaderSize(rd, defaultBufSize) <span class="hljs-comment">// &lt;--这里会预分配一块4KB大小的内存</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewReaderSize</span><span class="hljs-params">(rd io.Reader, size <span class="hljs-type">int</span>)</span></span> *Reader &#123;<br>	......<br>	r := <span class="hljs-built_in">new</span>(Reader)<br>	r.reset(<span class="hljs-built_in">make</span>([]<span class="hljs-type">byte</span>, size), rd)<br>	<span class="hljs-keyword">return</span> r<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(b *Reader)</span></span> reset(buf []<span class="hljs-type">byte</span>, r io.Reader) &#123;<br>	*b = Reader&#123; <span class="hljs-comment">// &lt;--最终创建一个*bufio.Reader保存预分配的内存</span><br>		buf:          buf,  <span class="hljs-comment">// 4KB空白内存</span><br>		rd:           r,    <span class="hljs-comment">// *connReader</span><br>		lastByte:     <span class="hljs-number">-1</span>,<br>		lastRuneSize: <span class="hljs-number">-1</span>,<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>读取http-body数据到缓存区</p>
+<ul>
+<li>从连接中读取请求数据，以及初始化响应</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *conn)</span></span> readRequest(ctx context.Context) (w *response, err <span class="hljs-type">error</span>) &#123;<br>    ......<br>    <span class="hljs-comment">// 真正处理读取连接内容的方法</span><br>    req, err := readRequest(c.bufr, keepHostHeader)<br>    <span class="hljs-comment">// 构造resp</span><br>    w = &amp;response&#123;<br>        conn:          c,<br>        cancelCtx:     cancelCtx,<br>        req:           req,<br>        reqBody:       req.Body,<br>        ......<br>    &#125;<br>    ......<br>    <span class="hljs-keyword">return</span> w, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>解析请求，并构request对象</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">readRequest</span><span class="hljs-params">(b *bufio.Reader, deleteHostHeader <span class="hljs-type">bool</span>)</span></span> (req *Request, err <span class="hljs-type">error</span>) &#123;<br>    <span class="hljs-comment">// 创建或从缓冲池中获取一个text格式协议的Reader，此时tp中携带了*bufio.Reade--&gt;b，在后续读取数据时将直接对b预申请的4KB缓冲区进行写操作</span><br>    <span class="hljs-comment">// 其内部会初始化所有的公共Header(单例模式)，用于后续读取公共Header时知道需要获取哪些Header-Value</span><br>	tp := newTextprotoReader(b)<br>	req = <span class="hljs-built_in">new</span>(Request)<br><br>	<span class="hljs-comment">// First line: GET /index.html HTTP/1.0</span><br>	<span class="hljs-keyword">var</span> s <span class="hljs-type">string</span><br>    <span class="hljs-comment">// 利用TextprotoReader读取conn信息，并填充b的4KB缓冲区</span><br>	<span class="hljs-keyword">if</span> s, err = tp.ReadLine(); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>    <span class="hljs-comment">// TextprotoReader的善后处理</span><br>	<span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>		putTextprotoReader(tp) <span class="hljs-comment">// 将资源Put到缓冲池中等待下一个报文复用</span><br>		<span class="hljs-keyword">if</span> err == io.EOF &#123;<br>			err = io.ErrUnexpectedEOF<br>		&#125;<br>	&#125;()<br>    <br>    ......<br>    <span class="hljs-comment">// 这里主要是解析URL上的请求参数，没啥好说的，比较简单，参数存储在req.URL.RawQuery中</span><br>	rawurl := req.RequestURI<br>	<span class="hljs-keyword">if</span> req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, badStringError(<span class="hljs-string">&quot;malformed HTTP version&quot;</span>, req.Proto)<br>	&#125;<br>	<span class="hljs-keyword">if</span> req.URL, err = url.ParseRequestURI(rawurl); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>    ......<br>    <br>    <span class="hljs-comment">// 这里获取newTextprotoReader()中初始化的所有Header-Key对用的Header-Value，返回KV接口的Header信息</span><br>	mimeHeader, err := tp.ReadMIMEHeader()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>	req.Header = Header(mimeHeader)<br>    <br>    ......<br>    <span class="hljs-comment">// 对于Body.len &gt; 0的请求，将b中4BK缓冲区的数据交给req.Body，这里交付的是指针对象，不存在深拷贝</span><br>    <span class="hljs-comment">// 	并且尽可能通过读取Header: Content-Length得知真实Body内容大小，对b进行二次封装--&gt;io.LimitReader，记录有效内容字节数</span><br>    <span class="hljs-comment">// 	后续可以通过字节数直接获取有效内容</span><br>    <span class="hljs-comment">// 对于Body.len == 0的请求，直接赋值 NoBody: struct&#123;&#125; 给到req.Body</span><br>    err = readTransfer(req, b)<br>    <br>    ......<br>    <span class="hljs-keyword">return</span> req, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/golang/" class="category-chain-item">golang</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/golang/">#golang</a>
+      
+        <a href="/tags/net/">#net</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Golang-浅析net库http请求处理流程</div>
+      <div>https://lamber92.github.io/2023/03/07/golang/http_request/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Lamber Chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-nc"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="ND - 禁止演绎">
+                    <i class="iconfont icon-nd"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/02/apisix/APISIX-2.13.3-CentOS_7-SingleNode/" title="APISIX-2.13.3-CentOS_7-单节点部署">
+                        <span class="hidden-mobile">APISIX-2.13.3-CentOS_7-单节点部署</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        pv: 
+        <span id="leancloud-site-pv"></span>
+         
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        uv: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

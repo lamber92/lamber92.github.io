@@ -1,0 +1,1288 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Lamber Chen">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="基于APISIX官方使用说明，测试路由和插件能力记录，及Go插件使用记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="APISIX-2.13.3-路由与插件">
+<meta property="og:url" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/index.html">
+<meta property="og:site_name" content="Lamber的学习笔记">
+<meta property="og:description" content="基于APISIX官方使用说明，测试路由和插件能力记录，及Go插件使用记录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/image-20220915140858565.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220915-141401.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/image-20220915162132387.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220915-165429.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220920-114408.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220920-154757.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220923-182911.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220923-175134.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220923-175530.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/image-20220923175909631.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/screenshot-20220923-180357.png">
+<meta property="article:published_time" content="2022-09-02T13:01:37.000Z">
+<meta property="article:modified_time" content="2022-09-02T13:01:37.000Z">
+<meta property="article:author" content="Lamber Chen">
+<meta property="article:tag" content="apisix">
+<meta property="article:tag" content="网关">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/image-20220915140858565.png">
+  
+  
+  
+  <title>APISIX-2.13.3-路由与插件 - Lamber的学习笔记</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"lamber92.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":3},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"zPUsZUPeBQSuuuPubrF7oUya-gzGzoHsz","app_key":"Ru7EOypuGHkIcmxERkIJ26Cv","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 50vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Lamber的学习笔记</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/go.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="APISIX-2.13.3-路由与插件"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-02 21:01" pubdate>
+          2022年9月2日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          30k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">APISIX-2.13.3-路由与插件</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="APISIX-2-13-3-路由与插件"><a href="#APISIX-2-13-3-路由与插件" class="headerlink" title="APISIX-2.13.3-路由与插件"></a>APISIX-2.13.3-路由与插件</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li><p>本文是基于官方使用说明，结合实践的过程记录。</p>
+<ul>
+<li>官方使用说明：<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/2.13/architecture-design/apisix/">https://apisix.apache.org/zh/docs/apisix/2.13/architecture-design/apisix/</a></li>
+</ul>
+</li>
+<li><p>客户端实验平台：windows10</p>
+</li>
+<li><p>http压力测试工具：Apache Bench VS16</p>
+</li>
+</ul>
+<h2 id="1-路由基础"><a href="#1-路由基础" class="headerlink" title="1. 路由基础"></a>1. 路由基础</h2><h3 id="1-1-前提准备"><a href="#1-1-前提准备" class="headerlink" title="1.1. 前提准备"></a>1.1. 前提准备</h3><ul>
+<li><p>简单的http测试服务，使用go快速编写，提供&#x2F;ping1<del>&#x2F;ping3、&#x2F;test1</del>test3接口</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;net/http&quot;</span><br>	<span class="hljs-string">&quot;os&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	port, flag := os.Args[<span class="hljs-number">1</span>], os.Args[<span class="hljs-number">2</span>]<br><br>	http.HandleFunc(<span class="hljs-string">&quot;/ping1&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;ping1_&quot;</span> + flag))<br>	&#125;)<br>	http.HandleFunc(<span class="hljs-string">&quot;/ping2&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;ping2_&quot;</span> + flag))<br>	&#125;)<br>	http.HandleFunc(<span class="hljs-string">&quot;/ping3&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;ping3_&quot;</span> + flag))<br>	&#125;)<br><br>	http.HandleFunc(<span class="hljs-string">&quot;/test1&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;test1_&quot;</span> + flag))<br>	&#125;)<br>	http.HandleFunc(<span class="hljs-string">&quot;/test2&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;test2_&quot;</span> + flag))<br>	&#125;)<br>	http.HandleFunc(<span class="hljs-string">&quot;/test3&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;test3_&quot;</span> + flag))<br>	&#125;)<br><br>	http.ListenAndServe(<span class="hljs-string">&quot;:&quot;</span>+port, <span class="hljs-literal">nil</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>启动服务</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">go build main.go<br>.\main.exe 9101 A &amp;<br>.\main.exe 9102 B &amp;<br>.\main.exe 9103 C &amp;<br></code></pre></td></tr></table></figure>
+
+</li>
+<li><p>测试过程中加入prometheus监控插件</p>
+</li>
+</ul>
+<h3 id="1-2-路径路由"><a href="#1-2-路径路由" class="headerlink" title="1.2. 路径路由"></a>1.2. 路径路由</h3><ul>
+<li><p>添加2组 <strong>上游</strong> 配置，配置如下：（这里只摘抄json格式配置，也可以在APISIX Dashboard中添加）</p>
+</li>
+<li><p>使用三个相同的服务节点，提供相同的<code>http-GET</code>接口组，绑定2组 <strong>上游</strong> 配置</p>
+<ul>
+<li><strong>ping接口组</strong></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">&#123;</span>  <span class="hljs-comment">// 三组节点，分流权重都是1</span><br>        <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 服务所在IP地址</span><br>        <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9102</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9103</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;connect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;send&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;read&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;roundrobin&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 均衡负载算法：带权轮询</span><br>    <span class="hljs-attr">&quot;scheme&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pass_host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pass&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ping接口组&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 上游组名称</span><br>    <span class="hljs-attr">&quot;keepalive_pool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>   <span class="hljs-comment">// 连接池配置，默认值</span><br>        <span class="hljs-attr">&quot;idle_timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">60</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;requests&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1000</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">320</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>test接口组</strong></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9102</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9103</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;connect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;send&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;read&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;roundrobin&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;scheme&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pass_host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pass&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test接口组&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;keepalive_pool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;idle_timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">60</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;requests&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1000</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">320</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>最终得到结果：</li>
+</ul>
+<p><img src="image-20220915140858565.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>添加2组 <strong>路由</strong> 配置，配置如下：（这里只摘抄json格式配置，也可以在APISIX Dashboard中添加）</p>
+<ul>
+<li><strong>ping接口组路由</strong></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/ping*&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 匹配路由</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ping接口组路由&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;methods&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;POST&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PUT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;DELETE&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PATCH&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;HEAD&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;OPTIONS&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;CONNECT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;TRACE&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span>  <span class="hljs-comment">// 插件组：添加prometheus</span><br>        <span class="hljs-attr">&quot;prometheus&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425504991357175601&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 绑定ping接口组</span><br>    <span class="hljs-attr">&quot;labels&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;API_VERSION&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;v1&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span>  <span class="hljs-comment">// 发布状态</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>test接口组路由</strong></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/test*&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 匹配路由</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test接口组路由&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;methods&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;POST&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PUT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;DELETE&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PATCH&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;HEAD&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;OPTIONS&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;CONNECT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;TRACE&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;prometheus&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425605109443987249&quot;</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 绑定test接口组</span><br>    <span class="hljs-attr">&quot;labels&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;API_VERSION&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;v1&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span>  <span class="hljs-comment">// 未发布状态</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>最终得到结果：</li>
+</ul>
+<p><img src="screenshot-20220915-141401.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>请求测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl.exe -w &#x27;%&#123;http_code&#125;&#x27; http://192.168.142.129:9080/ping1<br>ping1_A<br>&#x27;200&#x27;<br><br>curl.exe -w &#x27;%&#123;http_code&#125;&#x27; http://192.168.142.129:9080/ping1<br>ping1_B<br>&#x27;200&#x27;<br><br>curl.exe -w &#x27;%&#123;http_code&#125;&#x27; http://192.168.142.129:9080/ping1<br>ping1_C<br>&#x27;200&#x27;<br><br>curl.exe -w &#x27;%&#123;http_code&#125;&#x27; http://192.168.142.129:9080/ping1<br>ping1_A<br>&#x27;200&#x27;<br><br>curl.exe -w &#x27;%&#123;http_code&#125;&#x27; http://192.168.142.129:9080/test1<br>&#123;&quot;error_msg&quot;:&quot;404 Route Not Found&quot;&#125;<br>&#x27;404&#x27;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>ping接口组路由</strong> 成功过滤了未匹配路径的请求；后续发布 <strong>test接口组路由</strong> 可以看到 &#x2F;test1 可以请求成功；</li>
+<li><strong>ping接口组</strong> 上游配置均衡负载算法生效；</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-域名路由"><a href="#1-3-域名路由" class="headerlink" title="1.3. 域名路由"></a>1.3. 域名路由</h3><ul>
+<li><p>添加并发布2组 <strong>路由</strong> 配置，并下架1.2中配置的路径路由组，配置如下</p>
+<p><img src="image-20220915162132387.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>在请求端上添加 <a target="_blank" rel="noopener" href="http://www.ping_service.com/">www.ping_service.com</a> 与 <a target="_blank" rel="noopener" href="http://www.test_service.com/">www.test_service.com</a> 的域名解析</p>
+</li>
+<li><p>请求测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl.exe -I http://www.ping_service.com:9080/test1<br>HTTP/1.1 404 Not Found<br>Date: Thu, 15 Sep 2022 08:27:23 GMT<br>Content-Type: text/plain; charset=utf-8<br>Connection: keep-alive<br>Server: APISIX/2.13.3<br><br>curl.exe http://www.ping_service.com:9080/ping1<br>ping1_A<br><br>curl.exe http://www.ping_service.com:9080/ping1<br>ping1_B<br><br>curl.exe http://www.ping_service.com:9080/ping1<br>ping1_C<br><br>curl.exe http://www.test_service.com:9080/test1<br>test1_B<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>ping接口组路由2</strong> 成功过滤了未匹配域名+路径的请求；后续尝试的 <strong>test接口组路由2</strong> 可以看到 &#x2F;test1 可以请求成功；</p>
+</li>
+<li><p><strong>ping接口组</strong> 上游配置均衡负载算法生效；</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-4-异常场景"><a href="#1-4-异常场景" class="headerlink" title="1.4. 异常场景"></a>1.4. 异常场景</h3><h4 id="1-4-1-目标节点失活"><a href="#1-4-1-目标节点失活" class="headerlink" title="1.4.1. 目标节点失活"></a>1.4.1. 目标节点失活</h4><ul>
+<li><p>复用1.3的配置，将端口是9103的服务关停，此时<strong>ping接口组</strong>中目标节点只有9101与9102存活</p>
+</li>
+<li><p>修改<strong>ping接口组-连接超时</strong>配置为<strong>6</strong>s</p>
+</li>
+<li><p>使用curl不断请求 <a target="_blank" rel="noopener" href="http://www.ping_service.com:9080/ping1">http://www.ping_service.com:9080/ping1</a> 接口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -w &quot;@curl_format.txt&quot; --connect-timeout 10 -m 20 http://www.ping_service.com:9080/ping1<br>ping1_A<br>===================================================<br>   time_namelookup: 0.005903s<br>      time_connect: 0.006257s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.006287s<br>time_starttransfer: 2.015412s<br>    speed_download: 3byte/s<br>---------------------------------------------------<br>        time_total: 2.015588s<br>===================================================<br><br><br>curl -w &quot;@curl_format.txt&quot; --connect-timeout 10 -m 20 http://www.ping_service.com:9080/ping1<br>ping1_B<br>===================================================<br>   time_namelookup: 0.005980s<br>      time_connect: 0.006373s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.006407s<br>time_starttransfer: 0.019240s<br>    speed_download: 359byte/s<br>---------------------------------------------------<br>        time_total: 0.019460s<br>===================================================<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>可见<strong>连接超时配置不起效果</strong>，但不排除是curl的–connect-timeout设置问题，但是用chrome请求浏览器依然复现此问题；</li>
+<li>有1个节点失效后会轮询到下一节点尝试，间隔时间2s，但不会自动摘除；</li>
+</ul>
+</li>
+<li><p>对这个异常场景，官方是有解决方案的，这时添加节点<strong>健康检查</strong>配置</p>
+<ul>
+<li><p>先来看<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/2.13/health-check/#upstream-%E7%9A%84%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5">官方说明</a>的描述</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs tex">Apache APISIX 的健康检查使用 lua-resty-healthcheck 实现。<br><br>注意:<br>- 只有在 upstream 被请求时才会开始健康检查，如果 upstream 被配置但没有被请求，不会触发启动健康检查。<br>- 如果没有健康的节点，那么请求会继续发送给上游。<br>- 如果 upstream 中只有一个节点时不会触发启动健康检查，该唯一节点无论是否健康，请求都将转发给上游。<br>- 主动健康检查是必须的，这样不健康的节点才会恢复。<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>首先这里有个疑问？为什么节点组只能配一个节点的监控检查？</strong></p>
+<ul>
+<li>查阅<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/2.13/health-check/#%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B">官方文档</a>示例后，解除疑惑，原来端口不是必填项，所以这个场景只需要填写域名即可；如果包含多ip的情况，host填写域名即可；</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-comment">// ......</span><br>    <span class="hljs-attr">&quot;checks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;active&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;concurrency&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;healthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">200</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">302</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;successes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;http_path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/check&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;unhealthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">429</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">404</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">500</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">501</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">502</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">503</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">504</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">505</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;tcp_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;timeouts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    ......<br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>在9103服务的代码中添加&#x2F;check接口</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go">http.HandleFunc(<span class="hljs-string">&quot;/check&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>    log.Println(time.Now().Format(time.RFC3339Nano))<br>    _, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;ok&quot;</span>))<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>请求关停服务的&#x2F;check接口</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -w &quot;@curl_format.txt&quot; 192.168.4.72:9103/check<br>ok<br>===================================================<br>   time_namelookup: 0.000054s<br>      time_connect: 0.000686s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.000729s<br>time_starttransfer: 0.001069s<br>    speed_download: 1657byte/s<br>---------------------------------------------------<br>        time_total: 0.001207s<br>         http_code: 500<br>===================================================<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>持续请求网关的&#x2F;ping1接口<ul>
+<li>观察到的现象是首次请求到9103时会等待超时，且触发监控检查，如官方描述：<strong>监控检查需要有请求时才触发</strong>，验证<strong>健康检查-异常节点摘除</strong>功能正常；</li>
+<li>15秒后请求不再打到9103节点，请求响应时间恢复正常；</li>
+<li>重启9103节点服务，会收到2次&#x2F;check请求，然后恢复接收&#x2F;ping1请求，验证<strong>健康检查-异常节点恢复</strong>功能正常；</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-4-2-HTTP响应超时"><a href="#1-4-2-HTTP响应超时" class="headerlink" title="1.4.2. HTTP响应超时"></a>1.4.2. HTTP响应超时</h4><ul>
+<li>写一个简单的超时接口</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	http.HandleFunc(<span class="hljs-string">&quot;/time_out&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(writer http.ResponseWriter, request *http.Request)</span></span> &#123;<br>		time.Sleep(time.Second * <span class="hljs-number">20</span>)  <span class="hljs-comment">// 20秒返回</span><br>		_, _ = writer.Write([]<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;time_out&quot;</span>))<br>	&#125;)<br>	http.ListenAndServe(<span class="hljs-string">&quot;:9120&quot;</span>, <span class="hljs-literal">nil</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>先直接请求到超时服务查看结果</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -w &quot;@curl_format.txt&quot; 127.0.0.1:9120/time_out<br>time_out<br>===================================================<br>   time_namelookup: 0.000055s<br>      time_connect: 0.000654s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.000696s<br>time_starttransfer: 20.003177s<br>    speed_download: 0byte/s<br>---------------------------------------------------<br>        time_total: 20.003387s<br>===================================================<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>在APISIX配置一组上游节点+路由配置，提供超时测试</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/*&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;time_out路由&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;methods&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;POST&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PUT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;DELETE&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PATCH&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;HEAD&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;OPTIONS&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;CONNECT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;TRACE&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425650610830837553&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9120</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;connect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;send&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;read&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;roundrobin&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;scheme&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pass_host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pass&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;time_out接口组&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;keepalive_pool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;idle_timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">60</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;requests&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1000</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">320</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>请求APISIX接口路由</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -w &quot;@curl_format.txt&quot; http://192.168.142.129:9080/time_out<br>&lt;html&gt;<br>&lt;head&gt;&lt;title&gt;504 Gateway Time-out&lt;/title&gt;&lt;/head&gt;<br>&lt;body&gt;<br>&lt;center&gt;&lt;h1&gt;504 Gateway Time-out&lt;/h1&gt;&lt;/center&gt;<br>&lt;hr&gt;&lt;center&gt;openresty&lt;/center&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br><br>===================================================<br>   time_namelookup: 0.000056s<br>      time_connect: 0.000833s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.000876s<br>time_starttransfer: 10.147496s<br>    speed_download: 16byte/s<br>---------------------------------------------------<br>        time_total: 10.149126s<br>===================================================<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>验证配置响应超时时间有效</li>
+</ul>
+<h2 id="2-插件基础"><a href="#2-插件基础" class="headerlink" title="2. 插件基础"></a>2. 插件基础</h2><h3 id="2-1-插件作用域"><a href="#2-1-插件作用域" class="headerlink" title="2.1. 插件作用域"></a>2.1. 插件作用域</h3><h4 id="2-1-1-全局插件"><a href="#2-1-1-全局插件" class="headerlink" title="2.1.1. 全局插件"></a>2.1.1. 全局插件</h4><ul>
+<li><p>顾名思义该插件组全局生效，前提是已经搭建好prometheus+grafana与apisix的监控环境</p>
+</li>
+<li><p>复用1.3中的既有配置</p>
+</li>
+<li><p>添加prometheus全局插件</p>
+</li>
+<li><p>连续请求 <a target="_blank" rel="noopener" href="http://www.test_service.com:9080/test1">http://www.test_service.com:9080/test1</a> 接口观察请求数涨幅</p>
+<p><img src="screenshot-20220915-165429.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ul>
+<h4 id="2-1-2-局部插件"><a href="#2-1-2-局部插件" class="headerlink" title="2.1.2. 局部插件"></a>2.1.2. 局部插件</h4><ul>
+<li>顾名思义该插件只在绑定的局部链路下生效</li>
+<li>局部插件可以在 <strong>路由&#x2F;服务&#x2F;消费者</strong> 中绑定<ul>
+<li>多个<strong>路由</strong>可以绑定同一个<strong>服务</strong>，避免相同的插件组需要在多个路由中重复配置</li>
+<li><strong>消费者</strong>控制权限类插件的能力，<strong>路由</strong>控制权限类插件是否在本路由生效，因此<strong>消费者</strong>与<strong>路由</strong>无直接绑定关系</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-插件类型"><a href="#2-2-插件类型" class="headerlink" title="2.2. 插件类型"></a>2.2. 插件类型</h3><h4 id="2-2-1-路由流控"><a href="#2-2-1-路由流控" class="headerlink" title="2.2.1. 路由流控"></a>2.2.1. 路由流控</h4><ul>
+<li><strong>窗口时间请求数限制</strong></li>
+<li>复用1.3中的既有路由配置，绑定**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/2.13/plugins/limit-count/">limit-count</a>**插件，窗口时间为1s，限制请求数2，设置如下：</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;limit-count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;allow_degradation&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;count&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 窗口期内最大请求数</span><br>        <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;key_type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;var&quot;</span><span class="hljs-punctuation">,</span>     <span class="hljs-comment">// 可以设置针对header中的某个key(如remote_addr)来实现针对单个ip的流控</span><br>        <span class="hljs-attr">&quot;policy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;local&quot;</span><span class="hljs-punctuation">,</span>     <span class="hljs-comment">// 计数器被以内存方式保存在节点本地，默认选项;这个插件支持使用Redis集群，从而可以跨节点共享结果，通常用它来完成全局限速</span><br>        <span class="hljs-attr">&quot;rejected_code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">503</span><span class="hljs-punctuation">,</span>  <span class="hljs-comment">// 超量后返回http-status-code</span><br>        <span class="hljs-attr">&quot;show_limit_quota_header&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// http-header是否携带流控信息</span><br>        <span class="hljs-attr">&quot;time_window&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span>  <span class="hljs-comment">// 窗口时间(s)</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>快速连续请求 <a target="_blank" rel="noopener" href="http://www.ping_service.com:9080/ping1">http://www.ping_service.com:9080/ping1</a> 接口得到如下结果：</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -I http://www.ping_service.com:9080/ping1  <br>HTTP/1.1 200 OK                                   <br>Content-Type: text/plain; charset=utf-8           <br>Content-Length: 7                                 <br>Connection: keep-alive                            <br>X-RateLimit-Limit: 2      # 限制2个请求<br>X-RateLimit-Remaining: 1  # 剩余放通请求数<br>Date: Fri, 16 Sep 2022 10:01:07 GMT               <br>Server: APISIX/2.13.3                             <br><br>curl -I http://www.ping_service.com:9080/ping1  <br>HTTP/1.1 200 OK                                   <br>Content-Type: text/plain; charset=utf-8           <br>Content-Length: 7                                 <br>Connection: keep-alive                            <br>X-RateLimit-Limit: 2      # 限制2个请求<br>X-RateLimit-Remaining: 0  # 剩余放通请求数<br>Date: Fri, 16 Sep 2022 10:01:07 GMT               <br>Server: APISIX/2.13.3<br><br>curl -I http://www.ping_service.com:9080/ping1  <br>HTTP/1.1 503 Service Temporarily Unavailable  # 超量返回预设错误码<br>Date: Fri, 16 Sep 2022 10:01:07 GMT<br>Content-Type: text/html; charset=utf-8            <br>Content-Length: 194                               <br>Connection: keep-alive<br>Server: APISIX/2.13.3<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-2-2-黑白名单"><a href="#2-2-2-黑白名单" class="headerlink" title="2.2.2. 黑白名单"></a>2.2.2. 黑白名单</h4><ul>
+<li><p>包含多个插件，当前以最常用的 ip黑名单 测试</p>
+</li>
+<li><p>复用1.3中的既有路由配置，绑定**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/plugins/ip-restriction/">ip-restriction</a>**插件，设置如下：</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;ip-restriction&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Do you want to do something bad?&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-comment">// 自定义返回信息</span><br>    <span class="hljs-attr">&quot;whitelist&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;127.0.0.1&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;192.168.4.72&quot;</span><br>    <span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>请求接口结果</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -I http://www.ping_service.com:9080/ping1<br>HTTP/1.1 403 Forbidden<br>Date: Mon, 19 Sep 2022 09:08:44 GMT<br>Content-Type: text/plain; charset=utf-8<br>Connection: keep-alive<br>Server: APISIX/2.15.0<br><br>curl http://www.ping_service.com:9080/ping1<br>&#123;&quot;message&quot;:&quot;Do you want to do something bad?&quot;&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-2-3-登录鉴权"><a href="#2-2-3-登录鉴权" class="headerlink" title="2.2.3. 登录鉴权"></a>2.2.3. 登录鉴权</h4><ul>
+<li><p>包含多种登录态校验插件，当前以最常用的 jwt 测试</p>
+</li>
+<li><p>配置消费者，配置**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/plugins/jwt-auth/">jwt</a>**插件</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;jwt_test&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;jwt-auth&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">86400</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;key&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;data&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;secret&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test&quot;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>复用1.3中的既有路由配置，绑定**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/plugins/jwt-auth/">jwt</a>**插件，设置如下：</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;jwt-auth&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br><span class="hljs-comment">// ......</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>尝试不携带 jwt-token 信息请求</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -w &quot;@curl_format.txt&quot; http://www.ping_service.com:9080/ping1<br>&#123;&quot;message&quot;:&quot;Missing JWT token in request&quot;&#125;<br><br>===================================================<br>   time_namelookup: 0.006392s<br>      time_connect: 0.006845s<br>   time_appconnect: 0.000000s<br>  time_pretransfer: 0.006875s<br>time_starttransfer: 0.007312s<br>    speed_download: 5687byte/s<br>---------------------------------------------------<br>        time_total: 0.007560s<br>         http_code: 401<br>===================================================<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>尝试携带 jwt-token 信息（使用url参数携带）</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl http://www.ping_service.com:9080/ping1?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRh IjpbXSwiaWF0IjoxNjYzNTgxMTExLCJleHAiOjE2NjM1ODQ1OTksImF1ZCI6IiIsImlzcyI6IiIsInN1YiI6IiJ9.nMskTlYVx2PbHDcELnchdDBgespNT_bX3ikTWoQ6X6U<br>ping1_A<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-2-4-镜像请求"><a href="#2-2-4-镜像请求" class="headerlink" title="2.2.4. 镜像请求"></a>2.2.4. 镜像请求</h4><ul>
+<li>代理镜像插件，该插件提供了镜像客户端请求的能力。</li>
+<li>修改 &#x2F;test 的路由插件配置：</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;proxy-mirror&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http://192.168.4.72:9104&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;sample_ratio&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0.01</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>修改 &#x2F;test 的上游只保留一个节点：</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>    <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>在 9104 节点可以获取到**1%**的请求量</li>
+</ul>
+<h2 id="3-进阶能力"><a href="#3-进阶能力" class="headerlink" title="3. 进阶能力"></a>3. 进阶能力</h2><h3 id="3-1-金丝雀-灰度-发布"><a href="#3-1-金丝雀-灰度-发布" class="headerlink" title="3.1. 金丝雀(灰度)发布"></a>3.1. 金丝雀(灰度)发布</h3><h4 id="3-1-1-编写简单的批量发送测试客户端"><a href="#3-1-1-编写简单的批量发送测试客户端" class="headerlink" title="3.1.1. 编写简单的批量发送测试客户端"></a>3.1.1. 编写简单的批量发送测试客户端</h4><ul>
+<li>利用http-header中的uid进行流量划分，实现恢复发布</li>
+<li>uid范围[0-19]，方便观察</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;log&quot;</span><br>	<span class="hljs-string">&quot;net&quot;</span><br>	<span class="hljs-string">&quot;net/http&quot;</span><br>	<span class="hljs-string">&quot;os&quot;</span><br>	<span class="hljs-string">&quot;strconv&quot;</span><br>	<span class="hljs-string">&quot;sync&quot;</span><br>	<span class="hljs-string">&quot;time&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">splitReqs</span><span class="hljs-params">(src []*http.Request, size <span class="hljs-type">int</span>)</span></span> [][]*http.Request &#123;<br>	<span class="hljs-keyword">if</span> src == <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> [][]*http.Request&#123;&#125;<br>	&#125;<br>	<span class="hljs-keyword">var</span> (<br>		j      <span class="hljs-type">int</span><br>		length = <span class="hljs-built_in">len</span>(src)<br>		res    = <span class="hljs-built_in">make</span>([][]*http.Request, <span class="hljs-number">0</span>)<br>	)<br>	<span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i &lt; length; i += size &#123;<br>		j += size<br>		<span class="hljs-keyword">if</span> j &gt; length &#123;<br>			j = length<br>		&#125;<br>		res = <span class="hljs-built_in">append</span>(res, src[i:j])<br>	&#125;<br>	<span class="hljs-keyword">return</span> res<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newClient</span><span class="hljs-params">()</span></span> *http.Client &#123;<br>	<span class="hljs-keyword">return</span> &amp;http.Client&#123;<br>		Transport: &amp;http.Transport&#123;<br>			DialContext: (&amp;net.Dialer&#123;<br>				Timeout:   <span class="hljs-number">30</span> * time.Second,<br>				KeepAlive: <span class="hljs-number">30</span> * time.Second,<br>			&#125;).DialContext,<br>			MaxIdleConns:          <span class="hljs-number">100</span>,<br>			IdleConnTimeout:       <span class="hljs-number">90</span> * time.Second,<br>			TLSHandshakeTimeout:   <span class="hljs-number">10</span> * time.Second,<br>			ExpectContinueTimeout: <span class="hljs-number">1</span> * time.Second,<br>		&#125;,<br>		Timeout: <span class="hljs-number">30</span> * time.Second,<br>	&#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	url, tmpCount := os.Args[<span class="hljs-number">1</span>], os.Args[<span class="hljs-number">2</span>]<br>	count, err := strconv.ParseInt(tmpCount, <span class="hljs-number">10</span>, <span class="hljs-number">64</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br><br>	client := newClient()<br>	reqs := <span class="hljs-built_in">make</span>([]*http.Request, <span class="hljs-number">0</span>, count)<br>	userCount := <span class="hljs-number">20</span><br><br>	<span class="hljs-keyword">for</span> j := <span class="hljs-number">0</span>; j &lt; <span class="hljs-type">int</span>(count); j++ &#123;<br>		<span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i &lt; userCount; i++ &#123;<br>			req, err := http.NewRequest(http.MethodGet, url, <span class="hljs-literal">nil</span>)<br>			<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>				<span class="hljs-built_in">panic</span>(err)<br>			&#125;<br><br>			header := http.Header&#123;&#125;<br>			header.Add(<span class="hljs-string">&quot;uid&quot;</span>, strconv.Itoa(i))<br>			req.Header = header<br><br>			reqs = <span class="hljs-built_in">append</span>(reqs, req)<br>		&#125;<br>	&#125;<br><br>	reqsGroup := splitReqs(reqs, userCount)<br>	<span class="hljs-keyword">for</span> _, subReqs := <span class="hljs-keyword">range</span> reqsGroup &#123;<br>		w := sync.WaitGroup&#123;&#125;<br>		w.Add(<span class="hljs-built_in">len</span>(subReqs))<br><br>		<span class="hljs-keyword">for</span> _, req := <span class="hljs-keyword">range</span> subReqs &#123;<br>			<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(r *http.Request)</span></span> &#123;<br>				_, err := client.Do(r)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					log.Println(err)<br>				&#125;<br>				w.Done()<br>			&#125;(req)<br>		&#125;<br>		w.Wait()<br>	&#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h4 id="3-1-2-方案一"><a href="#3-1-2-方案一" class="headerlink" title="3.1.2. 方案一"></a>3.1.2. 方案一</h4><ul>
+<li><p><strong>一致性哈希均衡负载+权重</strong></p>
+</li>
+<li><p>修改 &#x2F;test1 的上游配置，使用一致性哈希均衡负载</p>
+<ul>
+<li>9101~9103节点权重设置：3</li>
+<li>9104节点权重设置：1（灰度节点）</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9102</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9103</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9104</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;chash&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;hash_on&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;header&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;key&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;uid&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ping接口组&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-comment">// ......</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="screenshot-20220920-114408.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><p>请求 &#x2F;test1 接口，查看各服务日志</p>
+<ul>
+<li>9101节点</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell">......<br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 13<br>2022/09/20 11:40:41 test1_A | uid: 5 <br>2022/09/20 11:40:41 test1_A | uid: 13<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>9102节点</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell">......<br>2022/09/20 11:40:41 test1_B | uid: 12<br>2022/09/20 11:40:41 test1_B | uid: 17<br>2022/09/20 11:40:41 test1_B | uid: 12<br>2022/09/20 11:40:41 test1_B | uid: 2 <br>2022/09/20 11:40:41 test1_B | uid: 19<br>2022/09/20 11:40:41 test1_B | uid: 19<br>2022/09/20 11:40:41 test1_B | uid: 2 <br>2022/09/20 11:40:41 test1_B | uid: 17<br>2022/09/20 11:40:41 test1_B | uid: 12<br>2022/09/20 11:40:41 test1_B | uid: 2 <br>2022/09/20 11:40:41 test1_B | uid: 19<br>2022/09/20 11:40:41 test1_B | uid: 12<br>2022/09/20 11:40:41 test1_B | uid: 17<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>9103节点</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs she">......<br>2022/09/20 11:40:41 test1_C | uid: 18<br>2022/09/20 11:40:41 test1_C | uid: 10<br>2022/09/20 11:40:41 test1_C | uid: 11<br>2022/09/20 11:40:41 test1_C | uid: 18<br>2022/09/20 11:40:41 test1_C | uid: 1<br>2022/09/20 11:40:41 test1_C | uid: 7<br>2022/09/20 11:40:41 test1_C | uid: 9<br>2022/09/20 11:40:41 test1_C | uid: 10<br>2022/09/20 11:40:41 test1_C | uid: 4<br>2022/09/20 11:40:41 test1_C | uid: 3<br>2022/09/20 11:40:41 test1_C | uid: 11<br>2022/09/20 11:40:41 test1_C | uid: 6<br>2022/09/20 11:40:41 test1_C | uid: 15<br>2022/09/20 11:40:41 test1_C | uid: 14<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>9104节点</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs shell">......<br>2022/09/20 11:40:41 test1_D | uid: 16<br>2022/09/20 11:40:41 test1_D | uid: 0<br>2022/09/20 11:40:41 test1_D | uid: 8<br>2022/09/20 11:40:41 test1_D | uid: 0<br>2022/09/20 11:40:41 test1_D | uid: 8<br>2022/09/20 11:40:41 test1_D | uid: 16<br>2022/09/20 11:40:41 test1_D | uid: 0<br>2022/09/20 11:40:41 test1_D | uid: 16<br>2022/09/20 11:40:41 test1_D | uid: 8<br>2022/09/20 11:40:41 test1_D | uid: 8<br>2022/09/20 11:40:41 test1_D | uid: 16<br>2022/09/20 11:40:41 test1_D | uid: 0<br>2022/09/20 11:40:41 test1_D | uid: 0<br>2022/09/20 11:40:41 test1_D | uid: 16<br>2022/09/20 11:40:41 test1_D | uid: 8<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>接下来把配置摘到2个节点：</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9104</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-comment">// ......</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>得到了正常的流量分配，9104节点的请求信息如下：</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell">......<br>2022/09/20 13:38:32 test1_D | uid: 16<br>2022/09/20 13:38:32 test1_D | uid: 8<br>2022/09/20 13:38:32 test1_D | uid: 16<br>2022/09/20 13:38:32 test1_D | uid: 16<br>2022/09/20 13:38:32 test1_D | uid: 8<br>2022/09/20 13:38:32 test1_D | uid: 8<br>2022/09/20 13:38:32 test1_D | uid: 16<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>结论：</strong><ul>
+<li><p>使用一致性哈希均衡负载进行灰度发布，<strong>权重不生效</strong>；</p>
+</li>
+<li><p>如果开启健康检查，触发节点摘除的场景，因为节点数量变化，流量有可能会被分到非灰度节点，<strong>流量不稳定</strong>；</p>
+</li>
+<li><p>如果结合k8s对上游节点进行均衡负载，即上游节点其实为k8s均衡负载服务，则<strong>可以规避上述问题</strong>，但会增加一层转发损耗；</p>
+</li>
+<li><p>在测试过程中，添加&#x2F;删除&#x2F;修改路由节点，对请求的响应率没有可见性的影响；</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-1-3-方案二-推荐"><a href="#3-1-3-方案二-推荐" class="headerlink" title="3.1.3. 方案二(推荐)"></a>3.1.3. 方案二(推荐)</h4><ul>
+<li><p><strong>traffic-split插件</strong></p>
+</li>
+<li><p>修改 <strong>test接口组</strong> 上游配置中的节点数量为2个：9101、9102</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9101</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;connect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;send&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;read&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;roundrobin&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;checks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;active&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;concurrency&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;healthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">200</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">302</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;successes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;http_path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/check&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;unhealthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">429</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">404</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">500</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">501</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">502</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">503</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">504</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">505</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;tcp_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;timeouts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;scheme&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pass_host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pass&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test接口组&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;keepalive_pool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;idle_timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">60</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;requests&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1000</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">320</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>新增 <strong>test接口组（灰度）</strong> 上游配置中的节点数量为2个：9103、9104</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nodes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9103</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;port&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9104</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;connect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;send&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;read&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">6</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;roundrobin&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;checks&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;active&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;concurrency&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;healthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">200</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">302</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;successes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><br>            <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;192.168.4.72&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;http_path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/check&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;unhealthy&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;http_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;http_statuses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                    <span class="hljs-number">429</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">404</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">500</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">501</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">502</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">503</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">504</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-number">505</span><br>                <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;interval&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;tcp_failures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">2</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;timeouts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;scheme&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;pass_host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;pass&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test接口组（灰度）&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;keepalive_pool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;idle_timeout&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">60</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;requests&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1000</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">320</span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="screenshot-20220920-154757.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>在 &#x2F;test 路由组配置traffic-split插件，上游425605109443987249与上游426356608394594097的流量比例为9:1</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;uri&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/test*&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test接口路由组2&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;methods&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>        <span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;POST&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PUT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;DELETE&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;PATCH&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;HEAD&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;OPTIONS&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;CONNECT&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-string">&quot;TRACE&quot;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;host&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;www.test_service.com&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;traffic-split&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;rules&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;weighted_upstreams&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                        <span class="hljs-punctuation">&#123;</span><br>                            <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425605109443987249&quot;</span><span class="hljs-punctuation">,</span><br>                            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9</span><br>                        <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>                        <span class="hljs-punctuation">&#123;</span><br>                            <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;426356608394594097&quot;</span><span class="hljs-punctuation">,</span><br>                            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>                        <span class="hljs-punctuation">&#125;</span><br>                    <span class="hljs-punctuation">]</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425605109443987249&quot;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;labels&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;API_VERSION&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;v1&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用3.1.1的批量发送工具发送100个请求测试流量分布</p>
+<ul>
+<li>9101和9102节点各接收到45个请求</li>
+<li>9103和9104节点个接收到5个请求</li>
+<li><strong>符合分流权重配置要求</strong></li>
+<li>因为没有配置匹配规则，因此<strong>流量是随机划分</strong>的</li>
+</ul>
+</li>
+<li><p>加入匹配规则控制灰度用户流量精准投递到灰度节点</p>
+<ul>
+<li>匹配规则插件文档：<a target="_blank" rel="noopener" href="https://github.com/api7/lua-resty-expr#operator-list">lua-resty-expr</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>operator</th>
+<th>description</th>
+<th>example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x3D;&#x3D;</td>
+<td>equal</td>
+<td>{“arg_name”, “&#x3D;&#x3D;”, “json”}</td>
+</tr>
+<tr>
+<td>~&#x3D;</td>
+<td>not equal</td>
+<td>{“arg_name”, “~&#x3D;”, “json”}</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>greater than</td>
+<td>{“arg_age”, “&gt;”, 24}</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>less than</td>
+<td>{“arg_age”, “&lt;”, 24}</td>
+</tr>
+<tr>
+<td>~~</td>
+<td>Regular match</td>
+<td>{“arg_name”, “~~”, “[a-z]+”}</td>
+</tr>
+<tr>
+<td>~*</td>
+<td>Case insensitive regular match</td>
+<td>{“arg_name”, “~*”, “[a-z]+”}</td>
+</tr>
+<tr>
+<td>in</td>
+<td>find in array</td>
+<td>{“arg_name”, “in”, {“1”,”2”}}</td>
+</tr>
+<tr>
+<td>has</td>
+<td>left value array has value in the right</td>
+<td>{“graphql_root_fields”, “has”, “repo”}</td>
+</tr>
+<tr>
+<td>!</td>
+<td>reverse the result</td>
+<td>{“arg_name”, “!”, “~~”, “[a-z]+”}</td>
+</tr>
+<tr>
+<td>ipmatch</td>
+<td>ip address match</td>
+<td>{“remote_addr”, “ipmatch”, {“127.0.0.1”, “192.168.0.0&#x2F;16”}}</td>
+</tr>
+</tbody></table>
+<ul>
+<li>修改 &#x2F;test 路由配置，使用正则表达式过滤出uid尾号为0的请求分配到灰度上游</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-comment">// ......</span><br>    <span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;traffic-split&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;rules&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-punctuation">&#123;</span><br>                    <span class="hljs-attr">&quot;match&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                        <span class="hljs-punctuation">&#123;</span><br>                            <span class="hljs-attr">&quot;vars&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                                <span class="hljs-punctuation">[</span><br>                                    <span class="hljs-string">&quot;http_uid&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;~~&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;[0$]&quot;</span><br>                                <span class="hljs-punctuation">]</span><br>                            <span class="hljs-punctuation">]</span><br>                        <span class="hljs-punctuation">&#125;</span><br>                    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>                    <span class="hljs-attr">&quot;weighted_upstreams&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                        <span class="hljs-punctuation">&#123;</span><br>                            <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;426356608394594097&quot;</span><span class="hljs-punctuation">,</span><br>                            <span class="hljs-attr">&quot;weight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><br>                        <span class="hljs-punctuation">&#125;</span><br>                    <span class="hljs-punctuation">]</span><br>                <span class="hljs-punctuation">&#125;</span><br>            <span class="hljs-punctuation">]</span><br>        <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;upstream_id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;425605109443987249&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>使用3.1.1的批量发送工具发送100个请求测试流量分布</p>
+<ul>
+<li>尾号为0的uid全部分流到9103、9104节点</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 0<br>2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 0<br>2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 0<br>2022/09/20 16:56:27 test1_C | uid: 0<br>2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 10<br>2022/09/20 16:56:27 test1_C | uid: 0<br>2022/09/20 16:56:28 test1_C | uid: 10<br>2022/09/20 16:56:28 test1_C | uid: 0<br>2022/09/20 16:56:28 test1_C | uid: 10<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>结论：</strong></p>
+<ul>
+<li>使用<strong>traffic-split插件</strong>进行灰度发布符合业务要求</li>
+<li>插件对上游配置无侵入性修改，修改、删除灰度分流只需要改动路由插件配置或关停插件</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-插件开发"><a href="#3-2-插件开发" class="headerlink" title="3.2. 插件开发"></a>3.2. 插件开发</h3><ul>
+<li><p>开发自定义插件分<strong>lua插件</strong>与<strong>外部插件</strong>，<strong>新增、修改、删除插件均不支持热加载</strong></p>
+</li>
+<li><p>lua插件调用方式为内部调用；</p>
+<ul>
+<li>lua插件开发思路参考：**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/plugin-develop/">插件开发</a>**</li>
+</ul>
+</li>
+<li><p>扩展插件调用方式为RPC调用；</p>
+<ul>
+<li>外部插件按执行时序分三类，见：**<a target="_blank" rel="noopener" href="https://apisix.apache.org/zh/docs/apisix/external-plugin/">External Plugin</a>**</li>
+<li><strong>插件稳定性需要进一步测试，不建议立即使用</strong></li>
+<li>RPC通信配置需要提前协商配置，避免后续需要重启APISIX</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-1-外部插件-Go"><a href="#3-2-1-外部插件-Go" class="headerlink" title="3.2.1. 外部插件-Go"></a>3.2.1. 外部插件-Go</h4><ul>
+<li><p>Go插件：<a target="_blank" rel="noopener" href="https://github.com/apache/apisix-go-plugin-runner"><strong>apisix-go-plugin-runner</strong></a></p>
+</li>
+<li><p>下载插件源码release-0.4版本–&gt;编译–&gt;复制到APISIX的docker容器中</p>
+</li>
+<li><p>修改APISIX配置文件：config.yaml，在末尾追加以下内容</p>
+<ul>
+<li>另一种外部插件加载方式，在下一小节使用</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">ext-plugin:</span><br>  <span class="hljs-attr">cmd:</span> [<span class="hljs-string">&quot;/usr/local/apisix/plugins/go-runner&quot;</span>, <span class="hljs-string">&quot;run&quot;</span>]<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>重启APISIX容器，查看APISIX启动日志，已显示有加载Go插件的日志</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022-09-21T05:56:42.968Z	INFO	plugin/plugin.go:73		register plugin limit-req<br>2022-09-21T05:56:42.968Z	INFO	plugin/plugin.go:73		register plugin response-rewrite<br>2022-09-21T05:56:42.968Z	INFO	plugin/plugin.go:73		register plugin say<br>2022-09-21T05:56:42.968Z	WARN	server/server.go:185	conf cache ttl is 1h12m0s<br>2022-09-21T05:56:42.968Z	WARN	server/server.go:193	listening to /usr/local/apisix/conf/apisix-46.sock<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>复用1.3中的路由配置，将插件配置为 say 插件<ul>
+<li><strong>注意：外部插件无法像内部插件一样生成插件图标显示在Dashboard的列表中</strong></li>
+<li><strong>顺带一提：使用服务配置外部插件，绑定到上游，不生效</strong></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;ext-plugin-post-req&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;conf&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>            <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;say&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&#123;\&quot;body\&quot;:\&quot;hello\&quot;&#125;&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>请求 &#x2F;ping1 接口</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs json">curl.exe http<span class="hljs-punctuation">:</span><span class="hljs-comment">//www.ping_service.com:9080/ping1</span><br>hello<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>结论：</strong><ul>
+<li>外部插件<strong>不支持冷加载</strong></li>
+<li>外部插件只能通过修改json格式配置项方式控制</li>
+<li>外部插件在服务配置中不生效</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-2-自定义外部插件-Go"><a href="#3-2-2-自定义外部插件-Go" class="headerlink" title="3.2.2. 自定义外部插件-Go"></a>3.2.2. 自定义外部插件-Go</h4><ul>
+<li>修改Go插件：<a target="_blank" rel="noopener" href="https://github.com/apache/apisix-go-plugin-runner"><strong>apisix-go-plugin-runner</strong></a></li>
+<li>添加以下文件：cmd&#x2F;go-runner&#x2F;plugins&#x2F;header_rewrite.go</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> plugins<br><br><span class="hljs-keyword">import</span> (<br>	pkgHTTP <span class="hljs-string">&quot;github.com/apache/apisix-go-plugin-runner/pkg/http&quot;</span><br>	<span class="hljs-string">&quot;github.com/apache/apisix-go-plugin-runner/pkg/log&quot;</span><br>	<span class="hljs-string">&quot;github.com/apache/apisix-go-plugin-runner/pkg/plugin&quot;</span><br>	<span class="hljs-string">&quot;net/http&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span> &#123;<br>	err := plugin.RegisterPlugin(&amp;HeaderRewrite&#123;&#125;)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to register plugin header_rewrite: %s&quot;</span>, err)<br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// HeaderRewrite 意于重写http请求头</span><br><span class="hljs-keyword">type</span> HeaderRewrite <span class="hljs-keyword">struct</span> &#123;<br>	<span class="hljs-comment">// Embed the default plugin here,</span><br>	<span class="hljs-comment">// so that we don&#x27;t need to reimplement all the methods.</span><br>	plugin.DefaultPlugin<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *HeaderRewrite)</span></span> Name() <span class="hljs-type">string</span> &#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;header_rewrite&quot;</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *HeaderRewrite)</span></span> ParseConf(in []<span class="hljs-type">byte</span>) (<span class="hljs-keyword">interface</span>&#123;&#125;, <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(p *HeaderRewrite)</span></span> RequestFilter(conf <span class="hljs-keyword">interface</span>&#123;&#125;, w http.ResponseWriter, r pkgHTTP.Request) &#123;<br>	r.Header().Set(<span class="hljs-string">&quot;X-GO-PLUGIN-TEST&quot;</span>, <span class="hljs-string">&quot;OK&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>编译</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">make build<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>修改APISIX配置config.yaml</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs json">ext-plugin<span class="hljs-punctuation">:</span><br>  path_for_test<span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;/tmp/x.sock&quot;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>重启APISIX</li>
+<li>添加环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">export APISIX_LISTEN_ADDRESS=unix:/tmp/x.sock<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>运行go-runner</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs json">./go-runner run &amp;<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	INFO	plugin/plugin.go<span class="hljs-punctuation">:</span><span class="hljs-number">73</span>		register plugin fault-injection<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	INFO	plugin/plugin.go<span class="hljs-punctuation">:</span><span class="hljs-number">73</span>		register plugin header_rewrite<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	INFO	plugin/plugin.go<span class="hljs-punctuation">:</span><span class="hljs-number">73</span>		register plugin limit-req<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	INFO	plugin/plugin.go<span class="hljs-punctuation">:</span><span class="hljs-number">73</span>		register plugin response-rewrite<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	INFO	plugin/plugin.go<span class="hljs-punctuation">:</span><span class="hljs-number">73</span>		register plugin say<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	WARN	server/server.go<span class="hljs-punctuation">:</span><span class="hljs-number">185</span>	conf cache ttl is <span class="hljs-number">1</span>h12m0s<br><span class="hljs-number">2022</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>T08<span class="hljs-punctuation">:</span><span class="hljs-number">58</span><span class="hljs-punctuation">:</span><span class="hljs-number">56.798</span>Z	WARN	server/server.go<span class="hljs-punctuation">:</span><span class="hljs-number">193</span>	listening to /tmp/x.sock<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>复用1.3中的路由配置，将插件配置为 header_rewrite 插件<ul>
+<li><strong>注意：外部插件无法像内部插件一样生成插件图标显示在Dashboard的列表中</strong></li>
+<li><strong>顺带一提：使用服务配置外部插件，绑定到上游，不生效</strong></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;plugins&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;ext-plugin-post-req&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;conf&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>            <span class="hljs-punctuation">&#123;</span><br>                <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;header_rewrite&quot;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><br>            <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;disable&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">false</span></span><br>    <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>请求 &#x2F;ping2 接口</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl.exe http://www.ping_service.com:9080/ping2<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>在 9101 中得到req-header，包含X-Go-Plugin-Test:[OK]</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022/09/21 17:10:43 ping2_A | header: map[Accept:[*/*] User-Agent:[curl/7.83.1] X-Forwarded-For:[192.168.142.1] X-Forwarded-Host:[www.ping_service.com] X-Forwarded-Port:[9080] X-Forwarded-Proto:[http] X-Go-Plugin-Test:[OK] X-Real-Ip:[192.168.142.1]]<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>插件日志</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022-09-21T09:08:02.491Z	INFO	server/server.go:108	Client connected (unix)<br>2022-09-21T09:08:02.491Z	INFO	server/server.go:124	receive rpc type: 2 data length: 228<br>2022-09-21T09:08:02.491Z	INFO	plugin/plugin.go:120	run plugin header_rewrite<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>模拟插件异常，杀死go-runner进程</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022-09-21T09:14:50.430Z	WARN	server/server.go:245	server receive terminated and exit<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>再次请求 &#x2F;ping2 接口，返回503。查看APISIX日志</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">2022/09/21 09:15:28 [warn] 47#47: *38406 [lua] plugin.lua:901: run_plugin(): ext-plugin-post-req exits with http status code 503, client: 192.168.142.1, server: _, request: &quot;GET /ping2 HTTP/1.1&quot;, host: &quot;www.ping_service.com:9080&quot;<br>2022/09/21 09:15:28 [crit] 47#47: *38424 connect() to unix:/tmp/x.sock failed (2: No such file or directory), client: 192.168.142.1, server: _, request: &quot;GET /ping2 HTTP/1.1&quot;, host: &quot;www.ping_service.com:9080&quot;<br>2022/09/21 09:15:28 [error] 47#47: *38424 [lua] init.lua:841: phase_func(): failed to connect to the unix socket unix:/tmp/x.sock: no such file or directory, client: 192.168.142.1, server: _, request: &quot;GET /ping2 HTTP/1.1&quot;, host: &quot;www.ping_service.com:9080&quot;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>重启go-runner，请求成功</li>
+<li><strong>结论：</strong><ul>
+<li>第一次配置外部插件时不支持热加载</li>
+<li>go-runner进程必须有验活机制</li>
+<li>在服务配置中不生效</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-数据监控"><a href="#3-3-数据监控" class="headerlink" title="3.3. 数据监控"></a>3.3. 数据监控</h3><h4 id="3-3-1-采集-amp-观测"><a href="#3-3-1-采集-amp-观测" class="headerlink" title="3.3.1. 采集&amp;观测"></a>3.3.1. 采集&amp;观测</h4><ul>
+<li>使用 Prometheus + Grafana 组合</li>
+</ul>
+<h4 id="3-3-2-指标"><a href="#3-3-2-指标" class="headerlink" title="3.3.2. 指标"></a>3.3.2. 指标</h4><p><img src="screenshot-20220923-182911.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="3-3-3-模拟测试"><a href="#3-3-3-模拟测试" class="headerlink" title="3.3.3. 模拟测试"></a>3.3.3. 模拟测试</h4><ul>
+<li><strong>前提条件</strong><ul>
+<li>1000RPS</li>
+<li>请求到上文中<strong>test接口路由组2</strong>-ID：<strong>425637854408869681</strong></li>
+</ul>
+</li>
+<li><strong>Nginx数据视窗</strong><ul>
+<li>从请求速率一项可以看到RPS为1000</li>
+</ul>
+</li>
+</ul>
+<p><img src="screenshot-20220923-175134.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>带宽视窗</strong><ul>
+<li>从route一项可以看到 ID：425637854408869681 的带宽情况</li>
+</ul>
+</li>
+</ul>
+<p><img src="screenshot-20220923-175530.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>HTTP视窗</strong><ul>
+<li>可以看到开始请求的一瞬间延迟是最大</li>
+<li>P90指标与P95指标很直观表现出链路延迟值</li>
+</ul>
+</li>
+</ul>
+<p><img src="image-20220923175909631.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>Misc视窗</strong><ul>
+<li>可以看到Etcd等组件的活跃情况</li>
+</ul>
+</li>
+</ul>
+<p><img src="screenshot-20220923-180357.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="3-3-4-告警"><a href="#3-3-4-告警" class="headerlink" title="3.3.4. 告警"></a>3.3.4. 告警</h4><ul>
+<li>可以利用 Prometheus - AlertManager 的能力进行触发，此处不演示</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BB%84%E4%BB%B6/" class="category-chain-item">组件</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/apisix/">#apisix</a>
+      
+        <a href="/tags/%E7%BD%91%E5%85%B3/">#网关</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>APISIX-2.13.3-路由与插件</div>
+      <div>https://lamber92.github.io/2022/09/02/apisix/APISIX-2.13.3-Function/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Lamber Chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年9月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-nc"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="ND - 禁止演绎">
+                    <i class="iconfont icon-nd"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/09/02/apisix/APISIX-2.13.3-CentOS_7-SingleNode/" title="APISIX-2.13.3-CentOS_7-单节点部署">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">APISIX-2.13.3-CentOS_7-单节点部署</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/23/golang/error/" title="Golang-Error处理">
+                        <span class="hidden-mobile">Golang-Error处理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        pv: 
+        <span id="leancloud-site-pv"></span>
+         
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        uv: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
