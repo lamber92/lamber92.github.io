@@ -16,28 +16,22 @@
   <meta name="author" content="Lamber Chen">
   <meta name="keywords" content="">
   
-    <meta name="description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+    <meta name="description" content="记录使用Hexo过程中遇到的问题及修复方式(魔改方式)。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Golang-资源泄露">
-<meta property="og:url" content="https://lamber92.github.io/2022/05/09/golang/leak/index.html">
+<meta property="og:title" content="解决Hexo问题记录">
+<meta property="og:url" content="https://lamber92.github.io/2023/04/05/hexo/hexo/index.html">
 <meta property="og:site_name" content="Lamber的学习笔记">
-<meta property="og:description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+<meta property="og:description" content="记录使用Hexo过程中遇到的问题及修复方式(魔改方式)。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak_profile.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_1.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_profile_1.png">
-<meta property="article:published_time" content="2022-05-09T13:01:37.000Z">
-<meta property="article:modified_time" content="2023-02-28T12:05:32.000Z">
+<meta property="article:published_time" content="2023-04-05T07:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-05T07:00:00.000Z">
 <meta property="article:author" content="Lamber Chen">
-<meta property="article:tag" content="golang">
-<meta property="article:tag" content="pprof">
+<meta property="article:tag" content="hexo">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
   
   
   
-  <title>Golang-资源泄露 - Lamber的学习笔记</title>
+  <title>解决Hexo问题记录 - Lamber的学习笔记</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -212,7 +206,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Golang-资源泄露"></span>
+            <span id="subtitle" data-typed-text="解决Hexo问题记录"></span>
           
         </div>
 
@@ -223,8 +217,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-05-09 21:01" pubdate>
-          2022年5月9日 晚上
+        <time datetime="2023-04-05 15:00" pubdate>
+          2023年4月5日 下午
         </time>
       </span>
     
@@ -235,7 +229,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.1k 字
+          3.9k 字
         
       </span>
     
@@ -296,65 +290,34 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Golang-资源泄露</h1>
+            <h1 style="display: none">解决Hexo问题记录</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="Golang-资源泄露"><a href="#Golang-资源泄露" class="headerlink" title="Golang-资源泄露"></a>Golang-资源泄露</h1><p align="right">Lamber</p>
-<p align="right">2022-05-09</p>
+                <h1 id="解决Hexo问题记录"><a href="#解决Hexo问题记录" class="headerlink" title="解决Hexo问题记录"></a>解决Hexo问题记录</h1><p align="right">Lamber</p>
+<p align="right">2023-04-05</p>
 
 
 
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。</p>
-<h2 id="1-HTTP-Body泄露（2022-05-09）"><a href="#1-HTTP-Body泄露（2022-05-09）" class="headerlink" title="1. HTTP-Body泄露（2022-05-09）"></a>1. HTTP-Body泄露（2022-05-09）</h2><ul>
-<li><p>运维监控发现生产环境某服务所有节点出现OOM现象，但预发布、测试环境未出现该现象，初步判断内存泄露与请求数成正比关系。但该服务同时承载HTTP与gRPC请求，需要进一步排查。</p>
-<ul>
-<li>下图5月7日内存泄露现象。</li>
-</ul>
-</li>
-</ul>
-<p><img src="buffer_leak.jpg" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>使用pprof工具采集测试环境服务内存使用信息，将采集后的信息下载到本地稍后分析。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -G &lt;被测服务域名&gt;/debug/pprof/heap &gt; heap.profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="buffer_leak_profile.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>由图中可以发现http的newBufioReader后续操作存在内存泄露，查代码发现在http中间件中有对Body数据重置的情况，但没有关闭io.Reader，因此造成内存泄露。修复方法如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>    _ = c.Request.Body.Close()<br>    c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))<br>&#125;()<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>但是光懂得Close()还不够，要理解为什么原来的Body没有被释放，这里涉及到bytes.Buffer的内部实现，在另外的文章记录。</p>
-</li>
-</ul>
-<h2 id="2-定时器泄露（2023-02-27）"><a href="#2-定时器泄露（2023-02-27）" class="headerlink" title="2. 定时器泄露（2023-02-27）"></a>2. 定时器泄露（2023-02-27）</h2><ul>
-<li>运维监控发现生产环境某2个微服务的cpu有持续上升趋势，并在测试环境中有相同的现象，初步判断是有某种工具泄露。<ul>
-<li>下图2月28日前的cpu占用率是未修复前的现象，乘持续上升趋势，且该服务没有cpu密集型任务。27日下午修复后CPU占用率恢复正常。</li>
-</ul>
-</li>
-</ul>
-<p><img src="timer_leak_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>使用pprof工具采集测试环境服务30秒的CPU使用信息，将采集后的信息下载到本地稍后分析。</p>
-<ul>
-<li>我们的服务内嵌了pprof，使用白名单方式做安全限制。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl &lt;被测服务域名&gt;/debug/pprof/profile --output ./profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="timer_leak_profile_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li>从图中发现占了86%CPU资源的是定时器，没有其他更有价值的线索了。并且只有2个服务出现该情况，排除是三方库导致的问题。于是定位该服务中所有使用定时器的地方。于是发现有一处代码循环创建定时器： <strong>time.NewTimer()</strong> ，但没有调用 <strong>Stop()</strong> 方法。<ul>
-<li>解决方式比较简单，使用 <strong>Reset()</strong> 方法每次重试定时器即可，这里不列出代码了；</li>
-<li>相对于解决问题，认识定时器内部实现还比较重要。</li>
-</ul>
-</li>
-</ul>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>hexo版本信息</p>
+<blockquote>
+<p>λ hexo -v<br>INFO  Validating config<br>hexo: 6.3.0<br>hexo-cli: 4.3.0<br>os: win32 10.0.19045<br>node: 18.14.2<br>v8: 10.2.154.26-node.22<br>uv: 1.44.2<br>zlib: 1.2.13<br>brotli: 1.0.9<br>ares: 1.18.1<br>modules: 108<br>nghttp2: 1.51.0<br>napi: 8<br>llhttp: 6.0.10<br>uvwasi: 0.0.14<br>acorn: 8.8.1<br>simdutf: 3.1.0<br>undici: 5.20.0<br>openssl: 3.0.8+quic<br>cldr: 42.0<br>icu: 72.1<br>tz: 2022g<br>unicode: 15.0<br>ngtcp2: 0.8.1<br>nghttp3: 0.7.0             </p>
+</blockquote>
+<h1 id="1-部署提示”Cannot-find-module-‘-x2F-db-json’”"><a href="#1-部署提示”Cannot-find-module-‘-x2F-db-json’”" class="headerlink" title="1. 部署提示”Cannot find module ‘.&#x2F;db.json’”"></a>1. 部署提示”Cannot find module ‘.&#x2F;db.json’”</h1><p>运行 <code>hexo g</code> 报错如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs shell">INFO  Validating config<br>ERROR Plugin load failed: hexo-server<br>Error: Cannot find module &#x27;./db.json&#x27;<br>Require stack:<br>- F:\blog\hexo-blog\node_modules\mime-db\index.js<br>- F:\blog\hexo-blog\node_modules\mime-types\index.js<br>- F:\blog\hexo-blog\node_modules\accepts\index.js<br>- F:\blog\hexo-blog\node_modules\compression\index.js<br>- F:\blog\hexo-blog\node_modules\hexo-server\lib\middlewares\gzip.js<br>- F:\blog\hexo-blog\node_modules\hexo-server\index.js<br>    at Module._resolveFilename (node:internal/modules/cjs/loader:1075:15)<br>    at Module._load (node:internal/modules/cjs/loader:920:27)<br>    at Module.require (node:internal/modules/cjs/loader:1141:19)<br>    at require (node:internal/modules/cjs/helpers:110:18)<br>    at Object.&lt;anonymous&gt; (F:\blog\hexo-blog\node_modules\mime-db\index.js:12:18)<br>    at Module._compile (node:internal/modules/cjs/loader:1254:14)<br>    at Module._extensions..js (node:internal/modules/cjs/loader:1308:10)<br>    at Module.load (node:internal/modules/cjs/loader:1117:32)<br>    at Module._load (node:internal/modules/cjs/loader:958:12)<br>    at Module.require (node:internal/modules/cjs/loader:1141:19)<br>    at require (node:internal/modules/cjs/helpers:110:18)<br>    at Object.&lt;anonymous&gt; (F:\blog\hexo-blog\node_modules\mime-types\index.js:15:10)<br>    at Module._compile (node:internal/modules/cjs/loader:1254:14)<br>    at Module._extensions..js (node:internal/modules/cjs/loader:1308:10)<br>    at Module.load (node:internal/modules/cjs/loader:1117:32)<br>    at Module._load (node:internal/modules/cjs/loader:958:12)<br>    at Module.require (node:internal/modules/cjs/loader:1141:19)<br>    at require (node:internal/modules/cjs/helpers:110:18)<br>    at Object.&lt;anonymous&gt; (F:\blog\hexo-blog\node_modules\accepts\index.js:16:12)<br>    at Module._compile (node:internal/modules/cjs/loader:1254:14)<br>    at Module._extensions..js (node:internal/modules/cjs/loader:1308:10)<br>    at Module.load (node:internal/modules/cjs/loader:1117:32)<br></code></pre></td></tr></table></figure>
+
+<p>我的本地项目在 <code>F:\blog\hexo-blog\node_modules\</code> 路径下，解决步骤如下：</p>
+<ol>
+<li>删除这个路径下 <code>mime-db</code> 、 <code>hexo-server</code> 两个目录</li>
+<li>重新下载这两个依赖包 <code>npm install</code></li>
+<li>重新执行 <code>hexo g</code> 成功不报错</li>
+</ol>
+<h1 id="2-MD文件插入图片使用-“-”-方式，hexo生成HTML后路径不正确"><a href="#2-MD文件插入图片使用-“-”-方式，hexo生成HTML后路径不正确" class="headerlink" title="2. MD文件插入图片使用 “[]()” 方式，hexo生成HTML后路径不正确"></a>2. MD文件插入图片使用 “[]()” 方式，hexo生成HTML后路径不正确</h1><p>修改 <code>node_modules\hexo-renderer-marked\lib\renderer.js</code> 文件</p>
+<p>在 <code>image(href, title, text)</code> 方法的中部加入如下代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-comment">// Prepend root to image path</span><br><span class="hljs-title function_">image</span>(<span class="hljs-params">href, title, text</span>) &#123;<br>    <span class="hljs-keyword">const</span> &#123; hexo, options &#125; = <span class="hljs-variable language_">this</span>;<br>    <span class="hljs-keyword">const</span> &#123; relative_link &#125; = hexo.<span class="hljs-property">config</span>;<br>    <span class="hljs-keyword">const</span> &#123; lazyload, prependRoot, postPath &#125; = options;<br><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-regexp">/^(#|\/\/|http(s)?:)/</span>.<span class="hljs-title function_">test</span>(href) &amp;&amp; !relative_link &amp;&amp; prependRoot) &#123;<br>        <span class="hljs-keyword">if</span> (!href.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&#x27;/&#x27;</span>) &amp;&amp; !href.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&#x27;\\&#x27;</span>) &amp;&amp; postPath) &#123;<br>            <span class="hljs-keyword">const</span> <span class="hljs-title class_">PostAsset</span> = hexo.<span class="hljs-title function_">model</span>(<span class="hljs-string">&#x27;PostAsset&#x27;</span>);<br>            <span class="hljs-comment">// findById requires forward slash</span><br>            <span class="hljs-keyword">const</span> asset = <span class="hljs-title class_">PostAsset</span>.<span class="hljs-title function_">findById</span>(<span class="hljs-title function_">join</span>(postPath, href.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\\/g</span>, <span class="hljs-string">&#x27;/&#x27;</span>)));<br>            <span class="hljs-comment">// asset.path is backward slash in Windows</span><br>            <span class="hljs-keyword">if</span> (asset) href = asset.<span class="hljs-property">path</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\\/g</span>, <span class="hljs-string">&#x27;/&#x27;</span>);<br>        &#125;<br>        href = url_for.<span class="hljs-title function_">call</span>(hexo, href);<br>    &#125;<br><br>    <span class="hljs-comment">// 加入这段代码===========================================</span><br>    <span class="hljs-comment">// 如果第一个符号是&#x27;/&#x27;,切掉</span><br>    <span class="hljs-keyword">if</span> (href.<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span> &amp;&amp; href[<span class="hljs-number">0</span>] == <span class="hljs-string">&#x27;/&#x27;</span>) &#123;<br>        href = href.<span class="hljs-title function_">substring</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">// 如果字符串不包含子串&#x27;http&#x27;,且包含&#x27;/&#x27;字符,截取&#x27;/&#x27;字符后的子串</span><br>    <span class="hljs-keyword">if</span> (!href.<span class="hljs-title function_">includes</span>(<span class="hljs-string">&#x27;://&#x27;</span>) &amp;&amp; href.<span class="hljs-title function_">includes</span>(<span class="hljs-string">&#x27;/&#x27;</span>)) &#123;<br>        <span class="hljs-keyword">const</span> index = href.<span class="hljs-title function_">lastIndexOf</span>(<span class="hljs-string">&#x27;/&#x27;</span>);<br>        href = href.<span class="hljs-title function_">substring</span>(index + <span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-comment">// 加入这段代码===========================================</span><br><br>    <span class="hljs-keyword">let</span> out = <span class="hljs-string">`&lt;img src=&quot;<span class="hljs-subst">$&#123;encodeURL(href)&#125;</span>&quot;`</span>;<br>    <span class="hljs-keyword">if</span> (text) out += <span class="hljs-string">` alt=&quot;<span class="hljs-subst">$&#123;text&#125;</span>&quot;`</span>;<br>    <span class="hljs-keyword">if</span> (title) out += <span class="hljs-string">` title=&quot;<span class="hljs-subst">$&#123;title&#125;</span>&quot;`</span>;<br>    <span class="hljs-keyword">if</span> (lazyload) out += <span class="hljs-string">&#x27; loading=&quot;lazy&quot;&#x27;</span>;<br><br>    out += <span class="hljs-string">&#x27;&gt;&#x27;</span>;<br>    <span class="hljs-keyword">return</span> out;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>重新执行 <code>hexo g</code> –&gt; <code>hexo s</code></p>
 
                 
               </div>
@@ -373,7 +336,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/golang/" class="category-chain-item">golang</a>
+  <a href="/categories/hexo/" class="category-chain-item">hexo</a>
   
   
 
@@ -388,9 +351,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/golang/">#golang</a>
-      
-        <a href="/tags/pprof/">#pprof</a>
+        <a href="/tags/hexo/">#hexo</a>
       
     </div>
   
@@ -402,8 +363,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Golang-资源泄露</div>
-      <div>https://lamber92.github.io/2022/05/09/golang/leak/</div>
+      <div>解决Hexo问题记录</div>
+      <div>https://lamber92.github.io/2023/04/05/hexo/hexo/</div>
     </div>
     <div class="license-meta">
       
@@ -415,7 +376,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年5月9日</div>
+          <div>2023年4月5日</div>
         </div>
       
       
@@ -459,15 +420,21 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/05/23/golang/error/" title="Golang-Error处理">
+                      <a href="/2023/08/03/golang/agollo/" title="Agollo项目学习与魔改记录">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Golang-Error处理</span>
+                        <span class="hidden-mobile">Agollo项目学习与魔改记录</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
                   </article>
                   <article class="post-next col-6">
                     
+                    
+                      <a href="/2023/04/05/rabbitmq/rabbitmq/" title="RabbitMQ使用记录">
+                        <span class="hidden-mobile">RabbitMQ使用记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
                     
                   </article>
                 </div>

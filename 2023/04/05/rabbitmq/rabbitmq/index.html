@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" >
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/icon.jpg">
+  <link rel="icon" href="/img/icon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Lamber Chen">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="记录一些使用RabbitMQ的场景，解决问题的方案，及避坑心得。并结合golang代码举例。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ使用记录">
+<meta property="og:url" content="https://lamber92.github.io/2023/04/05/rabbitmq/rabbitmq/index.html">
+<meta property="og:site_name" content="Lamber的学习笔记">
+<meta property="og:description" content="记录一些使用RabbitMQ的场景，解决问题的方案，及避坑心得。并结合golang代码举例。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-04-05T01:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-05T01:00:00.000Z">
+<meta property="article:author" content="Lamber Chen">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="rabbitmq">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>RabbitMQ使用记录 - Lamber的学习笔记</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"lamber92.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":3},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"zPUsZUPeBQSuuuPubrF7oUya-gzGzoHsz","app_key":"Ru7EOypuGHkIcmxERkIJ26Cv","server_url":"https://zpuszupe.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Lamber的学习笔记</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/god_of_war.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="RabbitMQ使用记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-04-05 09:00" pubdate>
+          2023年4月5日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.1k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">RabbitMQ使用记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="RabbitMQ使用记录"><a href="#RabbitMQ使用记录" class="headerlink" title="RabbitMQ使用记录"></a>RabbitMQ使用记录</h1><p align="right">Lamber</p>
+<p align="right">2023-04-05</p>
+
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>1. RabbitMQ与AMQP的关系：</strong></p>
+<ul>
+<li><p>RabbitMQ 是实现了 AMQP 协议的一种消息队列软件。它作为 AMQP 协议的一个实现，提供了可靠的消息传递机制，用于在分布式系统中传递和处理消息。</p>
+<ul>
+<li>RabbitMQ 仅实现了 <a target="_blank" rel="noopener" href="https://www.rabbitmq.com/specification.html">AMQP 0-9-1 版本</a>。</li>
+<li><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/tutorials/amqp-concepts.html">AMQP 0-9-1 是与 RabbitMQ 兼容的协议版本，而不是 AMQP 规范的官方版本</a>。</li>
+</ul>
+</li>
+<li><p>AMQP 定义了一种消息传递的标准协议，包括了消息的格式、交换机（Exchange）和队列（Queue）的操作规范，以及消息的确认机制、事务机制等。RabbitMQ 遵循了 AMQP 协议的规范，实现了这些功能。</p>
+</li>
+<li><p>RabbitMQ 提供了丰富的功能，如消息持久化、消息路由、消息过滤、消息优先级、发布&#x2F;订阅模式、RPC（Remote Procedure Call，远程过程调用）等，这些功能都是基于 AMQP 协议的规范实现的。</p>
+</li>
+</ul>
+<p><strong>2. 选择好RabbitMQ的消息传递模式，是正确使用RabbitMQ解决实际问题的前提。</strong></p>
+<ul>
+<li><p><strong>Direct模式：</strong></p>
+<p>生产者将消息发送到指定的队列，并且消费者只会从指定的队列接收消息。消息的路由键（routing key）与队列的绑定键（binding key）完全匹配时，消息才会被发送到对应的队列。这种模式适合于一对一的消息通信，例如系统间的点对点通信。常见的使用场景包括日志记录、任务分发等。</p>
+</li>
+<li><p><strong>Fanout模式：</strong></p>
+<p>生产者将消息发送到一个交换机，而交换机会将消息广播给所有绑定到它上面的队列。消费者可以同时订阅多个队列，从而接收到相同的消息。Fanout模式适合于广播通信，例如系统内的通知、事件广播等。</p>
+</li>
+<li><p><strong>Topic模式：</strong></p>
+<p>生产者将消息发送到一个交换机（exchange），而不是直接发送到队列。交换机会根据消息的路由键将消息发送到多个队列，而消费者可以根据队列的绑定键（binding key）来订阅消息。<strong>Topic模式支持通配符的匹配，可以根据路由键的模式匹配多个队列。</strong>这种模式适合于发布和订阅模型，允许生产者发送广播消息，同时允许消费者选择订阅自己感兴趣的消息。常见的使用场景包括新闻订阅、社交网络等。</p>
+</li>
+</ul>
+<p><strong>3. 下文中的RabbitMQ-Go代码示例均使用”<a target="_blank" rel="noopener" href="https://github.com/rabbitmq/amqp091-go%22%E5%8C%85">https://github.com/rabbitmq/amqp091-go&quot;包</a></strong></p>
+<h2 id="场景-amp-方案"><a href="#场景-amp-方案" class="headerlink" title="场景&amp;方案"></a>场景&amp;方案</h2><h3 id="1-保证消息顺序消费，且保证数据最终一致性"><a href="#1-保证消息顺序消费，且保证数据最终一致性" class="headerlink" title="1. 保证消息顺序消费，且保证数据最终一致性"></a>1. 保证消息顺序消费，且保证数据最终一致性</h3><p>这种场景的典型例子是不同数据库间表数据的增量同步。</p>
+<h4 id="1-1-功能配置"><a href="#1-1-功能配置" class="headerlink" title="1.1. 功能配置"></a><strong>1.1. 功能配置</strong></h4><ul>
+<li>交换机模式：Direct</li>
+<li>生产者：<ul>
+<li>消息持久化</li>
+<li>消息推送成功确认</li>
+</ul>
+</li>
+<li>消费者：<ul>
+<li>保证每个队列只有一个消费者（保证顺序）<ul>
+<li>如果条件允许，或者消息量巨大，可以在生产者侧根据业务属性对消息分散投递到不同队列，每个队列对应一个消费者，并行消费。</li>
+<li>比如10个队列同步user表数据，只要确保相同user_id的消息投递到同一队列，就能保证这个user_id的数据按顺序消费。将user_id对10取模，投递到对应序号的队列即可。</li>
+</ul>
+</li>
+<li>设置Qos.PrefetchCount &#x3D; 1，保证消息每次从队列重新获取，避免消费失败后，获取的消息是预获取缓冲区内消息，导致乱序<ul>
+<li>如果消费者侧可以保证消息消费幂等性，或有消息消费顺序保护策略，可加大PrefetchCount值。</li>
+</ul>
+</li>
+<li>消费成功时手动 Ack</li>
+<li>消费失败时手动 Nack，并且requeue&#x3D;true，使得消息能重回队首重新消费，否则消息将进入死信队列</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-2-代码示例"><a href="#1-2-代码示例" class="headerlink" title="1.2. 代码示例"></a><strong>1.2. 代码示例</strong></h4><ul>
+<li><strong>消费者</strong></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;log&quot;</span><br><br>	<span class="hljs-string">&quot;github.com/rabbitmq/amqp091-go/amqp&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-comment">// 连接 RabbitMQ 服务器</span><br>	conn, err := amqp.Dial(<span class="hljs-string">&quot;amqp://guest:guest@localhost:5672/&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法连接到 RabbitMQ 服务器：%v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> conn.Close()<br><br>	<span class="hljs-comment">// 创建一个通道</span><br>	ch, err := conn.Channel()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法创建 RabbitMQ 通道：%v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> ch.Close()<br><br>	<span class="hljs-comment">// 声明一个 Direct 类型的交换机</span><br>	err = ch.ExchangeDeclare(<br>		<span class="hljs-string">&quot;direct_exchange&quot;</span>, <span class="hljs-comment">// 交换机名称</span><br>		<span class="hljs-string">&quot;direct&quot;</span>,           <span class="hljs-comment">// 交换机类型</span><br>		<span class="hljs-literal">true</span>,               <span class="hljs-comment">// 是否持久化</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否自动删除</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否内部交换机</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否等待服务器响应</span><br>		<span class="hljs-literal">nil</span>,                <span class="hljs-comment">// 其他参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法声明 Direct 交换机：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 声明一个队列</span><br>	q, err := ch.QueueDeclare(<br>		<span class="hljs-string">&quot;direct_queue&quot;</span>, <span class="hljs-comment">// 队列名称</span><br>		<span class="hljs-literal">true</span>,           <span class="hljs-comment">// 是否持久化</span><br>		<span class="hljs-literal">false</span>,          <span class="hljs-comment">// 是否自动删除</span><br>		<span class="hljs-literal">false</span>,          <span class="hljs-comment">// 是否排他队列</span><br>		<span class="hljs-literal">false</span>,          <span class="hljs-comment">// 是否阻塞等待服务器响应</span><br>		<span class="hljs-literal">nil</span>,            <span class="hljs-comment">// 其他参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法声明队列：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 将队列绑定到交换机，使用 &quot;direct_routing_key&quot; 作为路由键</span><br>	err = ch.QueueBind(<br>		q.Name,             <span class="hljs-comment">// 队列名称</span><br>		<span class="hljs-string">&quot;direct_routing_key&quot;</span>, <span class="hljs-comment">// 路由键</span><br>		<span class="hljs-string">&quot;direct_exchange&quot;</span>,   <span class="hljs-comment">// 交换机名称</span><br>		<span class="hljs-literal">false</span>,               <span class="hljs-comment">// 是否等待服务器响应</span><br>		<span class="hljs-literal">nil</span>,                 <span class="hljs-comment">// 其他参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法绑定队列到 Direct 交换机：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 消费消息</span><br>	msgs, err := ch.Consume(<br>		q.Name, <span class="hljs-comment">// 队列名称</span><br>		<span class="hljs-string">&quot;&quot;</span>,     <span class="hljs-comment">// 消费者标签，为空则由服务器自动生成</span><br>		<span class="hljs-literal">false</span>,  <span class="hljs-comment">// 是否自动确认消息</span><br>		<span class="hljs-literal">false</span>,  <span class="hljs-comment">// 是否排他消费者</span><br>		<span class="hljs-literal">false</span>,  <span class="hljs-comment">// 是否阻塞等待服务器响应</span><br>		<span class="hljs-literal">false</span>,  <span class="hljs-comment">// 是否不等待服务器确认消费者创建完成</span><br>		<span class="hljs-literal">nil</span>,    <span class="hljs-comment">// 其他参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法注册消费者：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 接收并处理消息</span><br>	<span class="hljs-keyword">for</span> msg := <span class="hljs-keyword">range</span> msgs &#123;<br>		fmt.Printf(<span class="hljs-string">&quot;接收到消息：%s\n&quot;</span>, msg.Body)<br>		<span class="hljs-comment">// 手动确认消息已被消费</span><br>		msg.Ack(<span class="hljs-literal">false</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>生产者</strong></li>
+</ul>
+<p>需要注意的是，需要推送消息成功确认，确保消息不丢失。</p>
+<p>在这种模式下，如果不接受并处理已”确认回调信息”，那么推送消息的channel将会堵塞。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;log&quot;</span><br>	<span class="hljs-string">&quot;os&quot;</span><br>	<span class="hljs-string">&quot;os/signal&quot;</span><br>	<span class="hljs-string">&quot;syscall&quot;</span><br><br>	<span class="hljs-string">&quot;github.com/rabbitmq/amqp091-go/amqp&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-comment">// 连接 RabbitMQ 服务器</span><br>	conn, err := amqp.Dial(<span class="hljs-string">&quot;amqp://guest:guest@localhost:5672/&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法连接到 RabbitMQ 服务器：%v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> conn.Close()<br><br>	<span class="hljs-comment">// 创建一个通道</span><br>	ch, err := conn.Channel()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法创建 RabbitMQ 通道：%v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> ch.Close()<br><br>	<span class="hljs-comment">// 启用消息推送确认模式</span><br>	<span class="hljs-keyword">if</span> err = ch.Confirm(<span class="hljs-literal">false</span>); err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法启用消息推送确认模式：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 注册消息推送确认回调函数</span><br>	confirms := ch.NotifyPublish(<span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> amqp.Confirmation, <span class="hljs-number">1</span>))<br>	<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>		<span class="hljs-keyword">if</span> confirmed := &lt;-confirms; !confirmed.Ack &#123;<br>			log.Println(<span class="hljs-string">&quot;消息发送失败&quot;</span>)<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			log.Println(<span class="hljs-string">&quot;消息发送成功&quot;</span>)<br>		&#125;<br>	&#125;()<br><br>	<span class="hljs-comment">// 声明一个 Direct 类型的交换机</span><br>	err = ch.ExchangeDeclare(<br>		<span class="hljs-string">&quot;direct_exchange&quot;</span>, <span class="hljs-comment">// 交换机名称</span><br>		<span class="hljs-string">&quot;direct&quot;</span>,           <span class="hljs-comment">// 交换机类型</span><br>		<span class="hljs-literal">true</span>,               <span class="hljs-comment">// 是否持久化</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否自动删除</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否内部交换机</span><br>		<span class="hljs-literal">false</span>,              <span class="hljs-comment">// 是否等待服务器响应</span><br>		<span class="hljs-literal">nil</span>,                <span class="hljs-comment">// 其他参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法声明 Direct 交换机：%v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 发布消息到 Direct 交换机</span><br>	err = ch.Publish(<br>		<span class="hljs-string">&quot;direct_exchange&quot;</span>,   <span class="hljs-comment">// 交换机名称</span><br>		<span class="hljs-string">&quot;direct_routing_key&quot;</span>, <span class="hljs-comment">// 路由键</span><br>		<span class="hljs-literal">true</span>,                <span class="hljs-comment">// 是否强制发送（消息发送失败时会触发确认回调函数）</span><br>		<span class="hljs-literal">false</span>,               <span class="hljs-comment">// 是否立即发送</span><br>		amqp.Publishing&#123;<br>			ContentType: <span class="hljs-string">&quot;text/plain&quot;</span>,<br>			Body:        []<span class="hljs-type">byte</span>(<span class="hljs-string">&quot;Hello, RabbitMQ!&quot;</span>),<br>		&#125;, <span class="hljs-comment">// 消息内容</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;无法发布消息：%v&quot;</span>, err)<br>	&#125;<br><br>	fmt.Println(<span class="hljs-string">&quot;消息已成功发送&quot;</span>)<br><br>	<span class="hljs-comment">// 等待程序退出</span><br>	waitForExit()<br>&#125;<br><br><span class="hljs-comment">// 等待程序退出的辅助函数</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">waitForExit</span><span class="hljs-params">()</span></span> &#123;<br>	sigCh := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> os.Signal, <span class="hljs-number">1</span>)<br>	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)<br>	&lt;-sigCh<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-不需要保证消费顺序，消息量巨大，允许部分消息消费失败"><a href="#2-不需要保证消费顺序，消息量巨大，允许部分消息消费失败" class="headerlink" title="2. 不需要保证消费顺序，消息量巨大，允许部分消息消费失败"></a>2. 不需要保证消费顺序，消息量巨大，允许部分消息消费失败</h3><p>这种场景的典型例子是热点数据异步更新到搜索引擎。比如电商商品促销活动，不定量的商品数据属性高频变动，导致在短时间内产生海量数据。</p>
+<h4 id="2-1-功能配置"><a href="#2-1-功能配置" class="headerlink" title="2.1. 功能配置"></a><strong>2.1. 功能配置</strong></h4><ul>
+<li>交换机模式：Direct<ul>
+<li>如果需要多渠道通知，选择 Fanout</li>
+<li>如果需要根据不同属性多渠道动态通知，选择 Topic</li>
+</ul>
+</li>
+<li>生产者：<ul>
+<li>消息持久化</li>
+<li>消息推送不需要确认</li>
+</ul>
+</li>
+<li>消费者：<ul>
+<li>保证每个队列有多个消费者<ul>
+<li>一个connect，创建多个channel，每个channel对应一个消费者<ul>
+<li>如果使用 AutoAck 模式，可以一个channel创建多个consumer</li>
+<li>每个consumer_tag尽量不同，方便cancel</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>设置Qos.PrefetchCount &#x3D; 100，尽可能多预取缓存，批量处理消息，增加消息消费速度</li>
+<li>消费成功时手动 Ack，并且 multiple&#x3D;true，批量消费确认delivery_tag，delivery_tag是针对所属的channel的，对其他channel无影响<ul>
+<li>条件更宽松时可以使用 AutoAck</li>
+</ul>
+</li>
+<li>消费失败时手动 Nack，并且requeue&#x3D;false，使得消息能重回队首重新消费，否则消息将进入死信队列<ul>
+<li>条件更宽松时可以消费失败也是用 Ack</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-2-代码示例"><a href="#2-2-代码示例" class="headerlink" title="2.2. 代码示例"></a><strong>2.2. 代码示例</strong></h4><ul>
+<li><strong>消费者</strong></li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-comment">// 连接 RabbitMQ 服务器</span><br>	conn, err := amqp.Dial(<span class="hljs-string">&quot;amqp://guest:guest@localhost:5672/&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to connect to RabbitMQ: %v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> conn.Close()<br><br>	<span class="hljs-comment">// 创建 channel</span><br>	ch1, err := conn.Channel()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to open channel: %v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> ch1.Close()<br><br>	ch2, err := conn.Channel()<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to open channel: %v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">defer</span> ch2.Close()<br><br>	<span class="hljs-comment">// 声明 exchange</span><br>	err = ch1.ExchangeDeclare(<br>		<span class="hljs-string">&quot;test_exchange&quot;</span>, <span class="hljs-comment">// 名称</span><br>		<span class="hljs-string">&quot;direct&quot;</span>,        <span class="hljs-comment">// 类型</span><br>		<span class="hljs-literal">true</span>,            <span class="hljs-comment">// 持久化</span><br>		<span class="hljs-literal">false</span>,           <span class="hljs-comment">// 不自动删除</span><br>		<span class="hljs-literal">false</span>,           <span class="hljs-comment">// 不等待</span><br>		<span class="hljs-literal">false</span>,           <span class="hljs-comment">// 不等待 server 确认</span><br>		<span class="hljs-literal">nil</span>,             <span class="hljs-comment">// 额外参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to declare exchange: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 声明队列</span><br>	q, err := ch1.QueueDeclare(<br>		<span class="hljs-string">&quot;test_queue&quot;</span>,<br>		<span class="hljs-literal">true</span>,  <span class="hljs-comment">// 持久化</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 自动删除</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 独占</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不等待</span><br>		<span class="hljs-literal">nil</span>,   <span class="hljs-comment">// 额外参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to declare queue: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 绑定队列到 exchange 上</span><br>	<span class="hljs-keyword">if</span> err := ch1.QueueBind(q.Name, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;test_exchange&quot;</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">nil</span>); err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to bind queue: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 绑定队列到两个 channel 上</span><br>	<span class="hljs-keyword">if</span> err := ch1.QueueBind(q.Name, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">nil</span>); err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to bind queue: %v&quot;</span>, err)<br>	&#125;<br>	<span class="hljs-keyword">if</span> err := ch2.QueueBind(q.Name, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-literal">false</span>, <span class="hljs-literal">nil</span>); err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to bind queue: %v&quot;</span>, err)<br>	&#125;<br><br>	<span class="hljs-comment">// 创建两个 consumer</span><br>	consumer1, err := ch1.Consume(<br>		q.Name,<br>		<span class="hljs-string">&quot;&quot;</span>,<br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不自动应答</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 独占</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不等待</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不等待 server 确认</span><br>		<span class="hljs-literal">nil</span>,   <span class="hljs-comment">// 额外参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to register consumer: %v&quot;</span>, err)<br>	&#125;<br><br>	consumer2, err := ch2.Consume(<br>		q.Name,<br>		<span class="hljs-string">&quot;&quot;</span>,<br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不自动应答</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 独占</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不等待</span><br>		<span class="hljs-literal">false</span>, <span class="hljs-comment">// 不等待 server 确认</span><br>		<span class="hljs-literal">nil</span>,   <span class="hljs-comment">// 额外参数</span><br>	)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		log.Fatalf(<span class="hljs-string">&quot;failed to register consumer: %v&quot;</span>, err)<br>    &#125;<br>    <br>	<span class="hljs-comment">// 每次取出 10 条消息，进行批量确认</span><br>	<span class="hljs-keyword">for</span> &#123;<br>		<span class="hljs-keyword">select</span> &#123;<br>		<span class="hljs-keyword">case</span> msg, ok := &lt;-consumer1:<br>			<span class="hljs-keyword">if</span> !ok &#123;<br>				log.Printf(<span class="hljs-string">&quot;channel closed&quot;</span>)<br>				<span class="hljs-keyword">return</span><br>			&#125;<br>			<span class="hljs-comment">// 处理消息</span><br>			fmt.Printf(<span class="hljs-string">&quot;received message: %s\n&quot;</span>, msg.Body)<br><br>			<span class="hljs-comment">// 批量确认消息</span><br>			<span class="hljs-keyword">if</span> msg.DeliveryTag%<span class="hljs-number">10</span> == <span class="hljs-number">0</span> &#123;<br>                <span class="hljs-comment">// 这里也可以直接调用 msg.Ack(true) 代替，下同</span><br>				err = ch1.Ack(msg.DeliveryTag, <span class="hljs-literal">true</span>)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					log.Printf(<span class="hljs-string">&quot;failed to ack message: %v&quot;</span>, err)<br>				&#125;<br>			&#125;<br>		&#125;<br>        <span class="hljs-keyword">case</span> msg, ok := &lt;-consumer2:<br>			<span class="hljs-keyword">if</span> !ok &#123;<br>				log.Printf(<span class="hljs-string">&quot;channel closed&quot;</span>)<br>				<span class="hljs-keyword">return</span><br>			&#125;<br>			<span class="hljs-comment">// 处理消息</span><br>			fmt.Printf(<span class="hljs-string">&quot;received message: %s\n&quot;</span>, msg.Body)<br><br>			<span class="hljs-comment">// 批量确认消息</span><br>			<span class="hljs-keyword">if</span> msg.DeliveryTag%<span class="hljs-number">10</span> == <span class="hljs-number">0</span> &#123;<br>				err = ch2.Ack(msg.DeliveryTag, <span class="hljs-literal">true</span>)<br>				<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>					log.Printf(<span class="hljs-string">&quot;failed to ack message: %v&quot;</span>, err)<br>				&#125;<br>			&#125;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>生产者</strong></p>
+<p>同1.2生产者，省略。</p>
+</li>
+</ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/specification.html">https://www.rabbitmq.com/specification.html</a> [RabbitMQ 兼容性和一致性]</li>
+<li><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/tutorials/amqp-concepts.html">https://www.rabbitmq.com/tutorials/amqp-concepts.html</a> [AMQP 0-9-1 模型解释]</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/rabbitmq/amqp091-go">https://github.com/rabbitmq/amqp091-go</a> [由 RabbitMQ 团队维护的 AMQP 0-9-1 Go 客户端]</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/rabbitmq/" class="category-chain-item">rabbitmq</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/golang/">#golang</a>
+      
+        <a href="/tags/rabbitmq/">#rabbitmq</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>RabbitMQ使用记录</div>
+      <div>https://lamber92.github.io/2023/04/05/rabbitmq/rabbitmq/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Lamber Chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年4月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-nc"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="ND - 禁止演绎">
+                    <i class="iconfont icon-nd"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/04/05/hexo/hexo/" title="解决Hexo问题记录">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">解决Hexo问题记录</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/03/07/golang/http_request/" title="Golang-浅析net库http请求处理流程">
+                        <span class="hidden-mobile">Golang-浅析net库http请求处理流程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        pv: 
+        <span id="leancloud-site-pv"></span>
+         
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        uv: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
