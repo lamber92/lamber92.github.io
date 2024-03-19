@@ -1,0 +1,916 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" >
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/icon.jpg">
+  <link rel="icon" href="/img/icon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Lamber Chen">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="学习、记录go中interface的定义与用法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang-Interface">
+<meta property="og:url" content="https://lamber92.github.io/2021/07/05/golang/interface/index.html">
+<meta property="og:site_name" content="Lamber的学习笔记">
+<meta property="og:description" content="学习、记录go中interface的定义与用法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lamber92.github.io/2021/07/05/golang/interface/what_is_interface.png">
+<meta property="og:image" content="https://lamber92.github.io/2021/07/05/golang/interface/chaining.png">
+<meta property="og:image" content="https://lamber92.github.io/2021/07/05/golang/interface/interface_impl_2.jpeg">
+<meta property="og:image" content="https://lamber92.github.io/2021/07/05/golang/interface/interface_impl_1.jpeg">
+<meta property="article:published_time" content="2021-07-05T15:50:01.000Z">
+<meta property="article:modified_time" content="2021-07-05T15:50:01.000Z">
+<meta property="article:author" content="Lamber Chen">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="interface">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lamber92.github.io/2021/07/05/golang/interface/what_is_interface.png">
+  
+  
+  
+  <title>Golang-Interface - Lamber的学习笔记</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"lamber92.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":3},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"zPUsZUPeBQSuuuPubrF7oUya-gzGzoHsz","app_key":"Ru7EOypuGHkIcmxERkIJ26Cv","server_url":"https://zpuszupe.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Lamber的学习笔记</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/god_of_war.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Golang-Interface"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-07-05 23:50" pubdate>
+          2021年7月5日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Golang-Interface</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Golang-Interface"><a href="#Golang-Interface" class="headerlink" title="Golang-Interface"></a>Golang-Interface</h1><p align="right">Lamber</p>
+<p align="right">2021-07-05</p>
+
+
+
+<h1 id="1-interface是什么？"><a href="#1-interface是什么？" class="headerlink" title="1. interface是什么？"></a>1. interface是什么？</h1><p>wiki特别针对golang的interface做了解释：</p>
+<blockquote>
+<p>尽管<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Go">Go</a>编程语言一般不被认为是面向对象语言，它允许在用户定义类型上定义方法。Go有“接口”类型，兼容于支持给定方法集合的任何类型（这个类型不需要显式的实现这个接口）。空接口<code>interface&#123;&#125;</code>兼容于所有类型。</p>
+</blockquote>
+<p>在go101中的描述：</p>
+<blockquote>
+<p>接口类型是Go中的一种很特别的类型。接口类型在Go中扮演着重要的角色。 首先，在Go 中，接口值可以用来包裹非接口值；然后，通过值包裹，反射和多态得以实现。</p>
+</blockquote>
+<p>Gopher China 2017：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV15s411G7Tk/">https://www.bilibili.com/video/BV15s411G7Tk/</a></p>
+<p><img src="what_is_interface.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p><strong>抽象数据类型</strong><br>数据类型的数学模型<br>由其行为定义为：</p>
+<ul>
+<li>可能的值，</li>
+<li>对此类型的数据可以进行的操作，</li>
+<li>以及这些操作的行为</li>
+</ul>
+</blockquote>
+<p><strong>综上，Go的接口分两种：</strong></p>
+<ul>
+<li><p><strong>interface{} - 空接口：</strong></p>
+<ul>
+<li>是Go中的一种很特别的类型，可以[表示]Go中所有内置数据类型。</li>
+<li>这点有点像C++的void*，但是void*仅能表示C++中的指针类型</li>
+</ul>
+</li>
+<li><p><strong>type X interface{} - 抽象方法集：</strong></p>
+<ul>
+<li>尽管Go没有[Class]的概念，没有”常规”的OOP手段，但通过interface，可以实现多态。</li>
+<li>与Java的Interface定义一致，是接口的方法集；C++没有interface，但是有(纯)虚函数和虚基类，使用上比较复杂。</li>
+</ul>
+</li>
+</ul>
+<h1 id="2-为什么要用interface？"><a href="#2-为什么要用interface？" class="headerlink" title="2. 为什么要用interface？"></a>2. 为什么要用interface？</h1><p>Gopher China 2017上给出了下面上个理由：</p>
+<ul>
+<li><strong>writing generic algorithm</strong> - 编写通用算法</li>
+<li><strong>hiding implement detail</strong> - 隐藏实现细节<ul>
+<li><strong>dynamic dispatch of calls</strong> - 实现方法的动态调度(多态)</li>
+<li><strong>chaining interfaces</strong> -  链接多个interface</li>
+</ul>
+</li>
+<li><strong>providing interception points</strong> - 提供覆写入口</li>
+</ul>
+<h2 id="2-1-编写通用算法"><a href="#2-1-编写通用算法" class="headerlink" title="2.1 编写通用算法"></a>2.1 编写通用算法</h2><p>Gopher China 2017中举一个很经典的例子</p>
+<p>golang官方包的 <strong>sort.Sort()</strong> 排序方法</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Package sort provides primitives for sorting slices and user-defined</span><br><span class="hljs-comment">// collections.</span><br><span class="hljs-keyword">package</span> sort<br><br><span class="hljs-comment">// A type, typically a collection, that satisfies sort.Interface can be</span><br><span class="hljs-comment">// sorted by the routines in this package. The methods require that the</span><br><span class="hljs-comment">// elements of the collection be enumerated by an integer index.</span><br><span class="hljs-keyword">type</span> Interface <span class="hljs-keyword">interface</span> &#123;<br>	<span class="hljs-comment">// Len is the number of elements in the collection.</span><br>	Len() <span class="hljs-type">int</span><br>	<span class="hljs-comment">// Less reports whether the element with</span><br>	<span class="hljs-comment">// index i should sort before the element with index j.</span><br>	Less(i, j <span class="hljs-type">int</span>) <span class="hljs-type">bool</span><br>	<span class="hljs-comment">// Swap swaps the elements with indexes i and j.</span><br>	Swap(i, j <span class="hljs-type">int</span>)<br>&#125;<br><br>......<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">quickSort</span><span class="hljs-params">(data Interface, a, b, maxDepth <span class="hljs-type">int</span>)</span></span> &#123;<br>   	......<br>	<span class="hljs-keyword">if</span> b-a &gt; <span class="hljs-number">1</span> &#123;<br>		<span class="hljs-comment">// Do ShellSort pass with gap 6</span><br>		<span class="hljs-comment">// It could be written in this simplified form cause b-a &lt;= 12</span><br>		<span class="hljs-keyword">for</span> i := a + <span class="hljs-number">6</span>; i &lt; b; i++ &#123;<br>			<span class="hljs-keyword">if</span> data.Less(i, i<span class="hljs-number">-6</span>) &#123;<br>				data.Swap(i, i<span class="hljs-number">-6</span>)<br>			&#125;<br>		&#125;<br>		insertionSort(data, a, b)<br>	&#125;<br>&#125;<br><br>......<br><br><span class="hljs-comment">// Sort sorts data.</span><br><span class="hljs-comment">// It makes one call to data.Len to determine n, and O(n*log(n)) calls to</span><br><span class="hljs-comment">// data.Less and data.Swap. The sort is not guaranteed to be stable.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Sort</span><span class="hljs-params">(data Interface)</span></span> &#123;<br>	n := data.Len()<br>	quickSort(data, <span class="hljs-number">0</span>, n, maxDepth(n))<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>Sort() 的参数是interface接口类型，包含了三个方法：</p>
+<ul>
+<li><strong>Len()</strong></li>
+<li><strong>Less(i,j int)</strong></li>
+<li><strong>Swap(i, j int)</strong></li>
+</ul>
+<p>只要我们以任何对象为基础，实现了这三个方法，就实现了sort.Interface，然后可以针对这个对象使用 Sort 函数。</p>
+<p>看go官方包中的例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// byUniqueTypeName named type lists can be sorted by their unique type names.</span><br><span class="hljs-keyword">type</span> byUniqueTypeName []Type<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueTypeName)</span></span> Len() <span class="hljs-type">int</span>           &#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">len</span>(a) &#125;<br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueTypeName)</span></span> Less(i, j <span class="hljs-type">int</span>) <span class="hljs-type">bool</span> &#123; <span class="hljs-keyword">return</span> sortName(a[i]) &lt; sortName(a[j]) &#125;<br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueTypeName)</span></span> Swap(i, j <span class="hljs-type">int</span>)      &#123; a[i], a[j] = a[j], a[i] &#125;<br><br><span class="hljs-comment">// byUniqueMethodName method lists can be sorted by their unique method names.</span><br><span class="hljs-keyword">type</span> byUniqueMethodName []*Func<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueMethodName)</span></span> Len() <span class="hljs-type">int</span>           &#123; <span class="hljs-keyword">return</span> <span class="hljs-built_in">len</span>(a) &#125;<br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueMethodName)</span></span> Less(i, j <span class="hljs-type">int</span>) <span class="hljs-type">bool</span> &#123; <span class="hljs-keyword">return</span> a[i].Id() &lt; a[j].Id() &#125;<br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(a byUniqueMethodName)</span></span> Swap(i, j <span class="hljs-type">int</span>)      &#123; a[i], a[j] = a[j], a[i] &#125;<br><br><span class="hljs-comment">// sort for Type stability</span><br>sort.Sort(byUniqueTypeName(methods))<br><span class="hljs-comment">// sort for API stability</span><br>sort.Sort(byUniqueMethodName(methods))<br></code></pre></td></tr></table></figure>
+
+<p>代码中，<strong>byUniqueTypeName</strong> 和 <strong>byUniqueMethodName</strong> 都实现了 <strong>sort.Interface</strong> 的三个方法；</p>
+<p>这便是**[编写通用算法]**</p>
+<h2 id="2-2-隐藏实现细节"><a href="#2-2-隐藏实现细节" class="headerlink" title="2.2 隐藏实现细节"></a>2.2 隐藏实现细节</h2><h3 id="2-2-1-实现方法的动态调度"><a href="#2-2-1-实现方法的动态调度" class="headerlink" title="2.2.1 实现方法的动态调度"></a>2.2.1 实现方法的动态调度</h3><p>看个例子</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Animal <span class="hljs-keyword">interface</span> &#123;<br>	Run() <span class="hljs-type">string</span><br>&#125;<br><br><span class="hljs-keyword">type</span> Cat <span class="hljs-keyword">struct</span> &#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Cat)</span></span> Run() <span class="hljs-type">string</span> &#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;四只脚发力跑&quot;</span><br>&#125;<br><br><span class="hljs-keyword">type</span> Duck <span class="hljs-keyword">struct</span> &#123;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(d *Duck)</span></span> Run() <span class="hljs-type">string</span> &#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-string">&quot;两只脚发力跑&quot;</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">DescribeRun</span><span class="hljs-params">(animal Animal)</span></span> &#123;<br>	fmt.Println(animal.Run())<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	DescribeRun(&amp;Cat&#123;&#125;)<br>	DescribeRun(&amp;Duck&#123;&#125;)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>猫和鸭子都是动物，但是猫有四只脚，鸭只有两只脚，跑步形态不同，但是描述方法相同。</p>
+<p>换句活说：调用方式相同，但执行逻辑不同，这就是**[动态调度]**。</p>
+<h3 id="2-2-2-链接多个interface"><a href="#2-2-2-链接多个interface" class="headerlink" title="2.2.2 链接多个interface"></a>2.2.2 链接多个interface</h3><p>这个是空接口-interface{}的特性：</p>
+<p>可以连续接收不同的interface实例对象，只要这些对象包含是原接口方法的抽象接口实现。</p>
+<p>说得有点绕，看看视频里面的例子：</p>
+<p><img src="chaining.png" srcset="/img/loading.gif" lazyload></p>
+<p>这段代码是这样的：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestX</span><span class="hljs-params">(t *testing.T)</span></span> &#123;<br>	<span class="hljs-keyword">const</span> input = <span class="hljs-string">&quot;H4SIAAAAAAAA/......&quot;</span><br>	<span class="hljs-keyword">var</span> r io.Reader = strings.NewReader(input) <span class="hljs-comment">// 1</span><br>	r = base64.NewDecoder(base64.StdEncoding, r) <span class="hljs-comment">// 2</span><br>	r, err := gzip.NewReader(r) <span class="hljs-comment">// 3</span><br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		t.Fatal(err)<br>	&#125;<br>	io.Copy(os.Stdout, r) <span class="hljs-comment">// 4</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>逐句拆解一下：</p>
+<p>在1中，**strings.NewReader(input)**，内部返回的是 <strong>*reader.Reader{}</strong> 指针对象，在外部赋值给 <strong>io.Reader</strong> 类型的r变量</p>
+<p>此时外部的 变量r <strong>首次被赋值</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// NewReader returns a new Reader reading from s.</span><br><span class="hljs-comment">// It is similar to bytes.NewBufferString but more efficient and read-only.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewReader</span><span class="hljs-params">(s <span class="hljs-type">string</span>)</span></span> *Reader &#123; <span class="hljs-keyword">return</span> &amp;Reader&#123;s, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>&#125; &#125;<br></code></pre></td></tr></table></figure>
+
+<p>在2中，<strong>base64.NewDecoder(base64.StdEncoding, r)</strong> 入参是一个<strong>io.Reader</strong> ，</p>
+<p>而内部返回一个 <strong>*base64.newlineFilteringReader{}</strong> 指针对象，在外部赋值给 **io.Reader **类型的r变量，</p>
+<p>此时外部 变量r <strong>首次被赋值</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// NewDecoder constructs a new base64 stream decoder.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewDecoder</span><span class="hljs-params">(enc *Encoding, r io.Reader)</span></span> io.Reader &#123;<br>	<span class="hljs-keyword">return</span> &amp;decoder&#123;enc: enc, r: &amp;newlineFilteringReader&#123;r&#125;&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在3中，<strong>gzip.NewReader(r)</strong>  入参是一个 <strong>io.Reader</strong>，</p>
+<p>而内部返回一个 <strong>*gunzip.Reader{}</strong> 指针对象，在外部赋值给  **io.Reader **类型的r变量，</p>
+<p>此时外部 变量r <strong>又再次被赋值</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// NewReader creates a new Reader reading the given reader.</span><br><span class="hljs-comment">// If r does not also implement io.ByteReader,</span><br><span class="hljs-comment">// the decompressor may read more data than necessary from r.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// It is the caller&#x27;s responsibility to call Close on the Reader when done.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// The Reader.Header fields will be valid in the Reader returned.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">NewReader</span><span class="hljs-params">(r io.Reader)</span></span> (*Reader, <span class="hljs-type">error</span>) &#123;<br>	z := <span class="hljs-built_in">new</span>(Reader)<br>	<span class="hljs-keyword">if</span> err := z.Reset(r); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, err<br>	&#125;<br>	<span class="hljs-keyword">return</span> z, <span class="hljs-literal">nil</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>所以，变量 <strong>r</strong> 经历了3次变化：</p>
+<p><strong>*reader.Reader{}</strong> -&gt; <strong>*base64.newlineFilteringReader{}</strong> -&gt; <strong>*gunzip.Reader{}</strong></p>
+<p>但因为它们都实现了 <strong>io.Reader接口</strong> 的所有方法，因此都可以由 r 表示，不需要再创建额外的变量。</p>
+<h2 id="2-3-提供覆写入口"><a href="#2-3-提供覆写入口" class="headerlink" title="2.3 提供覆写入口"></a>2.3 提供覆写入口</h2><p>其实这一点是前两个特点的延伸意义</p>
+<p>下面借用Gin框架里面的例子来说明覆写的意义，主要看返回HTTP响应时调用：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	r := gin.Default()<br>	r.GET(<span class="hljs-string">&quot;/ping&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *gin.Context)</span></span> &#123;<br>		c.JSON(<span class="hljs-number">200</span>, gin.H&#123;<br>			<span class="hljs-string">&quot;message&quot;</span>: <span class="hljs-string">&quot;pong&quot;</span>,<br>		&#125;)<br>	&#125;)<br>	r.Run() <span class="hljs-comment">// listen and serve on 0.0.0.0:8080 (for windows &quot;localhost:8080&quot;)</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>接着看这个 <strong>JSON()</strong> 方法里面怎么处理的，最终内部会调用 <strong>render.Render</strong> 对象的 <strong>Render()</strong> 方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// JSON serializes the given struct as JSON into the response body.</span><br><span class="hljs-comment">// It also sets the Content-Type as &quot;application/json&quot;.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Context)</span></span> JSON(code <span class="hljs-type">int</span>, obj <span class="hljs-keyword">interface</span>&#123;&#125;) &#123;<br>	c.Render(code, render.JSON&#123;Data: obj&#125;)<br>&#125;<br><br><span class="hljs-comment">// Render writes the response headers and calls render.Render to render data.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *Context)</span></span> Render(code <span class="hljs-type">int</span>, r render.Render) &#123;<br>	c.Status(code)<br><br>	<span class="hljs-keyword">if</span> !bodyAllowedForStatus(code) &#123;<br>		r.WriteContentType(c.Writer)<br>		c.Writer.WriteHeaderNow()<br>		<span class="hljs-keyword">return</span><br>	&#125;<br><br>	<span class="hljs-keyword">if</span> err := r.Render(c.Writer); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>render.Render</strong> 是 interface 类型：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// Render interface is to be implemented by JSON, XML, HTML, YAML and so on.</span><br><span class="hljs-keyword">type</span> Render <span class="hljs-keyword">interface</span> &#123;<br>	<span class="hljs-comment">// Render writes data with custom ContentType.</span><br>	Render(http.ResponseWriter) <span class="hljs-type">error</span><br>	<span class="hljs-comment">// WriteContentType writes custom ContentType.</span><br>	WriteContentType(w http.ResponseWriter)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>默认调用时，我们传入的是 <strong>render.JSON</strong>，是 <strong>render.Render</strong> 接口的其中一种实现：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-comment">// JSON contains the given interface object.</span><br>type JSON struct <span class="hljs-punctuation">&#123;</span><br>	Data interface<span class="hljs-punctuation">&#123;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br><br><span class="hljs-comment">// Render (JSON) writes data with custom ContentType.</span><br>func (r JSON) Render(w http.ResponseWriter) (err error) <span class="hljs-punctuation">&#123;</span><br>	if err = WriteJSON(w<span class="hljs-punctuation">,</span> r.Data); err != nil <span class="hljs-punctuation">&#123;</span><br>		panic(err)<br>	<span class="hljs-punctuation">&#125;</span><br>	return<br><span class="hljs-punctuation">&#125;</span><br><br><span class="hljs-comment">// WriteContentType (JSON) writes JSON ContentType.</span><br>func (r JSON) WriteContentType(w http.ResponseWriter) <span class="hljs-punctuation">&#123;</span><br>	writeContentType(w<span class="hljs-punctuation">,</span> jsonContentType)<br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>如果我们自己重新定义一个 <strong>MyJson</strong>，</p>
+<p>并且实现 <strong>Render()</strong> 与 <strong>WriteContentType()</strong> 方法，是不是就可以定义自己想渲染的json结构？</p>
+<p>用起来也很方便，只要如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> MyJson <span class="hljs-keyword">struct</span> &#123;<br>	Data <span class="hljs-keyword">interface</span>&#123;&#125;<br>&#125;<br><br><span class="hljs-comment">// Render (JSON) writes data with custom ContentType.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(r MyJson)</span></span> Render(w http.ResponseWriter) (err <span class="hljs-type">error</span>) &#123;<br>	<span class="hljs-keyword">if</span> err = WriteJSON(w, r.Data); err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>	<span class="hljs-keyword">return</span><br>&#125;<br><br><span class="hljs-comment">// WriteContentType (JSON) writes JSON ContentType.</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(r MyJson)</span></span> WriteContentType(w http.ResponseWriter) &#123;<br>	writeContentType(w, jsonContentType)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>然后再最初Gin框架的响应体参数中传递 <strong>MyJson</strong> 类型的参数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestGin</span><span class="hljs-params">(t *testing.T)</span></span> &#123;<br>	r := gin.Default()<br>	r.GET(<span class="hljs-string">&quot;/ping&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(c *gin.Context)</span></span> &#123;<br>		<span class="hljs-comment">//c.JSON(200, gin.H&#123;</span><br>		<span class="hljs-comment">//	&quot;message&quot;: &quot;pong&quot;,</span><br>		<span class="hljs-comment">//&#125;)</span><br>		obj := <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-keyword">interface</span>&#123;&#125;&#123;&#125;<br>		c.Render(<span class="hljs-number">200</span>, MyJson&#123;Data: obj&#125;)<br>	&#125;)<br>	r.Run() <span class="hljs-comment">// listen and serve on 0.0.0.0:8080 (for windows &quot;localhost:8080&quot;)</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这就实现了**[覆写]**，非常方便呢！</p>
+<p>这里也表现出了Go-Interface一个非常巧妙且实用的特性，后面再展开描述~</p>
+<h1 id="3-interface的特性"><a href="#3-interface的特性" class="headerlink" title="3. interface的特性"></a>3. interface的特性</h1><h2 id="3-1-鸭子类型"><a href="#3-1-鸭子类型" class="headerlink" title="3.1 鸭子类型"></a>3.1 鸭子类型</h2><p>引自：<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B#%E6%8E%A5%E5%8F%A3">https://zh.wikipedia.org/wiki/%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B#%E6%8E%A5%E5%8F%A3</a></p>
+<blockquote>
+<p><strong>鸭子类型</strong>（英语：<strong>duck typing</strong>）在<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1">程序设计</a>中是<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%A1%9E%E5%9E%8B%E7%B3%BB%E7%B5%B1">动态类型</a>的一种风格。在这种风格中，一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由”当前方法和属性的集合”决定。</p>
+</blockquote>
+<p>go中没有Class，因此没有办法显式地<strong>继承</strong>某个类，从而实现多态的效果；</p>
+<p>而是用另外一种方式：interface-接口方法集，这种隐式绑定的方式实现了多态；</p>
+<p>这种方式使得在框架可以提供多种接口，方便外部业务层根据自己需求进行覆写，而无需将业务代码嵌入到框架代码中，即有**[非侵入式]**的性质。例子见2.3。</p>
+<p>认同<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844904161775976461">一篇掘金文章</a>里面的评价：</p>
+<blockquote>
+<p>这样就达到了一个灵活性和安全性的平衡。</p>
+<p>因为go对接口的实现是隐式的， 所以它的接口类型在使用之前是不固定的， 它可以灵活的变成各种接口类型，只要它满足使用者的对接口的要求。 </p>
+<p>又因为使用者使用接口时在编译时就对接口实现者有没有满足接口需求进行了检测，所以又兼顾了安全性。</p>
+</blockquote>
+<h2 id="3-2-类型断言"><a href="#3-2-类型断言" class="headerlink" title="3.2 类型断言"></a>3.2 类型断言</h2><h3 id="3-2-1-不判断断言正确性"><a href="#3-2-1-不判断断言正确性" class="headerlink" title="3.2.1 不判断断言正确性"></a>3.2.1 不判断断言正确性</h3><p>这种情况下，如果贸然使用断言后的结果，可能会导致panic</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestA</span><span class="hljs-params">(t *testing.T)</span></span> &#123;<br>	<span class="hljs-keyword">var</span> x <span class="hljs-keyword">interface</span>&#123;&#125; = <span class="hljs-type">int</span>(<span class="hljs-number">1</span>)<br>	<span class="hljs-keyword">var</span> y = x.(<span class="hljs-type">string</span>)<br>	t.Log(y)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-2-判断断言正确性"><a href="#3-2-2-判断断言正确性" class="headerlink" title="3.2.2 判断断言正确性"></a>3.2.2 判断断言正确性</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestB</span><span class="hljs-params">(t *testing.T)</span></span> &#123;<br>	<span class="hljs-keyword">var</span> x <span class="hljs-keyword">interface</span>&#123;&#125; = <span class="hljs-type">int</span>(<span class="hljs-number">1</span>)<br>	y, ok := x.(<span class="hljs-type">string</span>)<br>	t.Log(y, ok) <span class="hljs-comment">// ok的值是false</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-3-switch-case"><a href="#3-2-3-switch-case" class="headerlink" title="3.2.3 switch-case"></a>3.2.3 switch-case</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TestC</span><span class="hljs-params">(t *testing.T)</span></span> &#123;<br>	<span class="hljs-keyword">var</span> x <span class="hljs-keyword">interface</span>&#123;&#125; = <span class="hljs-type">int</span>(<span class="hljs-number">1</span>)<br>	<span class="hljs-keyword">switch</span> i := x.(<span class="hljs-keyword">type</span>) &#123;<br>	<span class="hljs-keyword">case</span> <span class="hljs-type">int</span>:<br>		t.Log(<span class="hljs-string">&quot;int&quot;</span>, i)<br>	<span class="hljs-keyword">case</span> <span class="hljs-type">string</span>:<br>		t.Log(<span class="hljs-string">&quot;string&quot;</span>, i)<br>	<span class="hljs-keyword">default</span>:<br>		t.Log(<span class="hljs-string">&quot;unknown type&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-3-与反射的关系"><a href="#3-3-与反射的关系" class="headerlink" title="3.3 与反射的关系"></a>3.3 与反射的关系</h2><p>在go中，常用的内置数据类型需要先转换为interface{}后，才能调用 <strong>reflect.ValueOf()</strong> 开启反射之旅，这里不详细展开了。</p>
+<h1 id="4-interface的底层实现"><a href="#4-interface的底层实现" class="headerlink" title="4. interface的底层实现"></a>4. interface的底层实现</h1><h2 id="4-1-interface"><a href="#4-1-interface" class="headerlink" title="4.1 interface{}"></a>4.1 interface{}</h2><p>interface{} - 空接口</p>
+<p>在 Go 1.16 中，位于 src&#x2F;runtime&#x2F;runtime2.go，下同</p>
+<p>这是空接口”数据”的载体：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> eface <span class="hljs-keyword">struct</span> &#123;<br>	_type *_type          <span class="hljs-comment">//类型信息</span><br>	data  unsafe.Pointer  <span class="hljs-comment">//数据信息，指向数据指针</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>eface 有两个变量，所指向对象的类型信息(_type)和数据指针(data)。先看看  <code>_type</code>  字段：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> _type <span class="hljs-keyword">struct</span> &#123;<br>	size       <span class="hljs-type">uintptr</span> <span class="hljs-comment">//类型大小</span><br>	ptrdata    <span class="hljs-type">uintptr</span> <span class="hljs-comment">//含有所有指针类型前缀大小</span><br>	hash       <span class="hljs-type">uint32</span>  <span class="hljs-comment">//类型hash值；避免在哈希表中计算</span><br>	tflag      tflag   <span class="hljs-comment">//额外类型信息标志</span><br>	align      <span class="hljs-type">uint8</span>   <span class="hljs-comment">//该类型变量对齐方式</span><br>	fieldalign <span class="hljs-type">uint8</span>   <span class="hljs-comment">//该类型结构字段对齐方式   </span><br>	kind       <span class="hljs-type">uint8</span>   <span class="hljs-comment">//类型编号</span><br>    <span class="hljs-comment">// function for comparing objects of this type</span><br>	<span class="hljs-comment">// (ptr to object A, ptr to object B) -&gt; ==?</span><br>    equal <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span></span> <span class="hljs-type">bool</span>  <span class="hljs-comment">// 指向判断两个对象是否相等的算法方法</span><br>	<span class="hljs-comment">// gcdata stores the GC type data for the garbage collector.</span><br>	<span class="hljs-comment">// If the KindGCProg bit is set in kind, gcdata is a GC program.</span><br>	<span class="hljs-comment">// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.</span><br>	gcdata    *<span class="hljs-type">byte</span>     <span class="hljs-comment">//gc数据</span><br>	str       nameOff   <span class="hljs-comment">// 类型名字的偏移</span><br>	ptrToThis typeOff<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>_type 是 Go 所有类型的公共描述，里面包含GC，反射等需要的细节，它决定 data 应该如何解释和操作，这也是它和c语言 void*不同之处。<br>各个类型所需要的类型描述是不一样的，比如chan，除了chan（指针数组实现的环状队列）本身外，还需要描述其元素类型，而map则需要key类型信息和value类型信息等：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> ptrtype <span class="hljs-keyword">struct</span> &#123;<br>	typ  _type     <span class="hljs-comment">// 指针类型 </span><br>	elem *_type    <span class="hljs-comment">// 指针所指向的元素类型</span><br>&#125;<br><br><span class="hljs-keyword">type</span> chantype <span class="hljs-keyword">struct</span> &#123;<br>	typ  _type     <span class="hljs-comment">// channel类型</span><br>	elem *_type    <span class="hljs-comment">// channel元素类型</span><br>	dir  <span class="hljs-type">uintptr</span><br>&#125;<br><br><span class="hljs-keyword">type</span> maptype <span class="hljs-keyword">struct</span> &#123;<br>	typ    _type<br>	key    *_type<br>	elem   *_type<br>	bucket *_type <span class="hljs-comment">// internal type representing a hash bucket</span><br>	<span class="hljs-comment">// function for hashing keys (ptr to key, seed) -&gt; hash</span><br>	hasher     <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, <span class="hljs-type">uintptr</span>)</span></span> <span class="hljs-type">uintptr</span><br>	keysize    <span class="hljs-type">uint8</span>  <span class="hljs-comment">// size of key slot</span><br>	elemsize   <span class="hljs-type">uint8</span>  <span class="hljs-comment">// size of elem slot</span><br>	bucketsize <span class="hljs-type">uint16</span> <span class="hljs-comment">// size of bucket</span><br>	flags      <span class="hljs-type">uint32</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>再看看interface的类型定义，下面讲 iface 会提到:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> interfacetype <span class="hljs-keyword">struct</span> &#123;<br>	typ     _type   <span class="hljs-comment">// 实际对象类型</span><br>	pkgpath name    <span class="hljs-comment">// 包名</span><br>	mhdr    []imethod  <span class="hljs-comment">// 方法集切片</span><br>&#125;<br><br><span class="hljs-keyword">type</span> imethod <span class="hljs-keyword">struct</span> &#123;<br>	name nameOff<br>	ityp typeOff<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过<code>_type.kind</code>可解析出其具体类型，最后通过地址运算即可解析出完整的原始数据类型结构树</p>
+<p>reflect.rtype 的定义与 _type 完全一致，可以方便我们理解：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// rtype is the common implementation of most values.</span><br><span class="hljs-comment">// It is embedded in other struct types.</span><br><span class="hljs-comment">//</span><br><span class="hljs-comment">// rtype must be kept in sync with ../runtime/type.go:/^type._type.</span><br><span class="hljs-keyword">type</span> rtype <span class="hljs-keyword">struct</span> &#123;<br>	size       <span class="hljs-type">uintptr</span><br>	ptrdata    <span class="hljs-type">uintptr</span> <span class="hljs-comment">// number of bytes in the type that can contain pointers</span><br>	hash       <span class="hljs-type">uint32</span>  <span class="hljs-comment">// hash of type; avoids computation in hash tables</span><br>	tflag      tflag   <span class="hljs-comment">// extra type information flags</span><br>	align      <span class="hljs-type">uint8</span>   <span class="hljs-comment">// alignment of variable with this type</span><br>	fieldAlign <span class="hljs-type">uint8</span>   <span class="hljs-comment">// alignment of struct field with this type</span><br>	kind       <span class="hljs-type">uint8</span>   <span class="hljs-comment">// enumeration for C</span><br>	<span class="hljs-comment">// function for comparing objects of this type</span><br>	<span class="hljs-comment">// (ptr to object A, ptr to object B) -&gt; ==?</span><br>	equal     <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span></span> <span class="hljs-type">bool</span><br>	gcdata    *<span class="hljs-type">byte</span>   <span class="hljs-comment">// garbage collection data</span><br>	str       nameOff <span class="hljs-comment">// string form</span><br>	ptrToThis typeOff <span class="hljs-comment">// type for pointer to this type, may be zero</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>通过Kind()的得到对应类型后，进行指针类型转换（不理解的话，可以类比一下，TCP通讯中获得的字节流，是如何赋值给一个结构化对象的？打比方当以1字节对齐时，将是逐个byte的指针偏移运算）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(t *rtype)</span></span> Elem() Type &#123;<br>	<span class="hljs-keyword">switch</span> t.Kind() &#123;<br>	<span class="hljs-keyword">case</span> Array:<br>		tt := (*arrayType)(unsafe.Pointer(t))<br>		<span class="hljs-keyword">return</span> toType(tt.elem)<br>	<span class="hljs-keyword">case</span> Chan:<br>		tt := (*chanType)(unsafe.Pointer(t))<br>		<span class="hljs-keyword">return</span> toType(tt.elem)<br>	<span class="hljs-keyword">case</span> Map:<br>		tt := (*mapType)(unsafe.Pointer(t))<br>		<span class="hljs-keyword">return</span> toType(tt.elem)<br>	<span class="hljs-keyword">case</span> Ptr:<br>		tt := (*ptrType)(unsafe.Pointer(t))<br>		<span class="hljs-keyword">return</span> toType(tt.elem)<br>	<span class="hljs-keyword">case</span> Slice:<br>		tt := (*sliceType)(unsafe.Pointer(t))<br>		<span class="hljs-keyword">return</span> toType(tt.elem)<br>	&#125;<br>	<span class="hljs-built_in">panic</span>(<span class="hljs-string">&quot;reflect: Elem of invalid type &quot;</span> + t.String())<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们来举个例子：摘自：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/jiujuan/p/12653806.html">https://www.cnblogs.com/jiujuan/p/12653806.html</a></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;strconv&quot;</span><br>)<br><br><span class="hljs-keyword">type</span> Binary <span class="hljs-type">uint64</span><br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	b := Binary(<span class="hljs-number">200</span>)<br>	any := (<span class="hljs-keyword">interface</span>&#123;&#125;)(b)<br>	fmt.Println(any)<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>则 eface 结构如图所示：</p>
+<p><img src="interface_impl_2.jpeg" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>图片来源：<a target="_blank" rel="noopener" href="https://blog.csdn.net/i6448038/article/details/82916330">https://blog.csdn.net/i6448038/article/details/82916330</a></p>
+</blockquote>
+<h2 id="4-2-type-X-interface"><a href="#4-2-type-X-interface" class="headerlink" title="4.2 type X interface"></a>4.2 type X interface</h2><p>type X interface - 非空接口</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> iface <span class="hljs-keyword">struct</span> &#123;<br>    tab  *itab<br>    data unsafe.Pointer<br>&#125;<br><br><span class="hljs-keyword">type</span> itab <span class="hljs-keyword">struct</span> &#123;<br>    inter  *interfacetype    <span class="hljs-comment">// 接口定义的类型信息</span><br>    _type  *_type            <span class="hljs-comment">// 接口实际指向值的类型信息</span><br>    link   *itab  <br>    bad    <span class="hljs-type">int32</span><br>    inhash <span class="hljs-type">int32</span><br>    fun    [<span class="hljs-number">1</span>]<span class="hljs-type">uintptr</span>        <span class="hljs-comment">// 接口方法实现列表，即函数地址列表，按字典序排序</span><br>&#125;<br><br><span class="hljs-keyword">type</span> interfacetype <span class="hljs-keyword">struct</span> &#123;<br>   typ     _type<br>   pkgpath name<br>   mhdr    []imethod<br>&#125;<br><br><span class="hljs-keyword">type</span> imethod <span class="hljs-keyword">struct</span> &#123;<br>   name nameOff          <span class="hljs-comment">// 方法名</span><br>   ityp typeOff          <span class="hljs-comment">// 描述方法参数返回值等细节</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>非空接口(iface)本身除了可以容纳满足其接口的对象之外，还需要保存其接口的方法，因此除了data字段，iface通过tab字段描述非空接口的细节，包括接口方法定义，接口方法实现地址，接口所指类型等。iface是非空接口的实现，而不是类型定义，iface的真正类型为interfacetype，其第一个字段仍然为描述其自身类型的_type字段。</p>
+<p>我们来举个例子：引自<a target="_blank" rel="noopener" href="https://www.cnblogs.com/jiujuan/p/12653806.html">https://www.cnblogs.com/jiujuan/p/12653806.html</a></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;strconv&quot;</span><br>)<br><br><span class="hljs-keyword">type</span> Binary <span class="hljs-type">uint64</span><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(i Binary)</span></span> String() <span class="hljs-type">string</span> &#123;<br>	<span class="hljs-keyword">return</span> strconv.FormatUint(i.Get(), <span class="hljs-number">10</span>)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(i Binary)</span></span> Get() <span class="hljs-type">uint64</span> &#123;<br>	<span class="hljs-keyword">return</span> <span class="hljs-type">uint64</span>(i)<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	b := Binary(<span class="hljs-number">200</span>)<br>    <span class="hljs-keyword">var</span> s fmt.Stringer = b  <span class="hljs-comment">// 或者 s := fmt.Stringer(b)</span><br>	fmt.Println(s.String())<br>&#125;<br><br>......<br><br><span class="hljs-keyword">type</span> Stringer <span class="hljs-keyword">interface</span> &#123;<br>	String() <span class="hljs-type">string</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>则 iface 结构如图所示：</p>
+<p><img src="interface_impl_1.jpeg" srcset="/img/loading.gif" lazyload alt="img"></p>
+<blockquote>
+<p>图片来源：<a target="_blank" rel="noopener" href="https://blog.csdn.net/i6448038/article/details/82916330">https://blog.csdn.net/i6448038/article/details/82916330</a></p>
+</blockquote>
+<p>之后我们再来看下断言，也比较容易理解了：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">var</span> ctx *gin.Context<br><span class="hljs-keyword">var</span> c context.Context = ctx<br>newCtx, ok := c.(*gin.Context)<br><span class="hljs-keyword">if</span> ok &#123;<br>    ......<br>&#125;<br><br>......<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">assertI2I2</span><span class="hljs-params">(inter *interfacetype, i iface)</span></span> (r iface, b <span class="hljs-type">bool</span>) &#123;<br>	tab := i.tab<br>	<span class="hljs-keyword">if</span> tab == <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	<span class="hljs-keyword">if</span> tab.inter != inter &#123;<br>		tab = getitab(inter, tab._type, <span class="hljs-literal">true</span>)<br>		<span class="hljs-keyword">if</span> tab == <span class="hljs-literal">nil</span> &#123;<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>	&#125;<br>	r.tab = tab<br>	r.data = i.data<br>	b = <span class="hljs-literal">true</span><br>	<span class="hljs-keyword">return</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="题外话"><a href="#题外话" class="headerlink" title="题外话"></a>题外话</h1><h2 id="为什么-Go-没有泛型类型？"><a href="#为什么-Go-没有泛型类型？" class="headerlink" title="为什么 Go 没有泛型类型？"></a>为什么 Go 没有泛型类型？</h2><p>既然设计了空接口-inerface{}，为什么不提供泛型支持呢？</p>
+<p>看看C++的泛型：</p>
+<p><strong>第一类：参数模板</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;  </span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func_add</span><span class="hljs-params">(T&amp; t, T&amp; y)</span> </span>&#123;<br>    cout &lt;&lt; t + y &lt;&lt; endl;<br>&#125;<br><br><span class="hljs-type">int</span> a = <span class="hljs-number">2</span>;<br><span class="hljs-type">int</span> b = <span class="hljs-number">3</span>;<br><span class="hljs-built_in">func_add</span>(a, b);<br><br><span class="hljs-comment">// 运行结果：5</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>第二类：函数模板</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Node</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    Node* next;<br>&#125;;<br><br><span class="hljs-comment">// 函数模板</span><br><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt; </span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">const</span> T&amp; t)</span> </span>&#123;<br>    cout &lt;&lt; <span class="hljs-string">&quot;template: &quot;</span> &lt;&lt; t &lt;&lt; endl;<br>&#125;<br><br><span class="hljs-comment">// 函数模板具体化(用于处理Node类型数据)</span><br><span class="hljs-keyword">template</span>&lt;&gt; <br><span class="hljs-type">void</span> <span class="hljs-built_in">func</span>&lt;Node&gt;(<span class="hljs-type">const</span> Node&amp; node) &#123;<br>    cout &lt;&lt; <span class="hljs-string">&quot;template&lt;Node&gt;: &quot;</span> &lt;&lt; node.val &lt;&lt; endl;<br>&#125;<br><br><span class="hljs-comment">// 函数模板具体化(用于处理int类型数据)</span><br><span class="hljs-keyword">template</span>&lt;&gt; <br><span class="hljs-type">void</span> <span class="hljs-built_in">func</span>&lt;<span class="hljs-type">int</span>&gt;(<span class="hljs-type">const</span> <span class="hljs-type">int</span>&amp; n) &#123;<br>    cout &lt;&lt; <span class="hljs-string">&quot;template&lt;int&gt;: &quot;</span> &lt;&lt; n &lt;&lt; endl;<br>&#125;<br><br><span class="hljs-type">double</span> d = <span class="hljs-number">2.1</span>;<br><span class="hljs-built_in">func</span>(d);    <span class="hljs-comment">// 函数模板未具体化double类型函数，调用模板</span><br>Node node&#123; <span class="hljs-number">2</span>, <span class="hljs-literal">nullptr</span> &#125;;<br><span class="hljs-built_in">func</span>(node); <span class="hljs-comment">// 函数模板具体化Node类型函数，调用函数模板的具体化</span><br></code></pre></td></tr></table></figure>
+
+<p>明显感觉到，如果go支持泛型编程，在编码效率上会大大提高。</p>
+<p><strong>好消息是</strong>，在广大GoCoders的极力推动下，官方终于放下了强硬的态度，将在1.18版本中加入泛型，这也得益于golang活跃的社区：</p>
+<p><a target="_blank" rel="noopener" href="https://golang.org/doc/faq#generics">https://golang.org/doc/faq#generics</a></p>
+<blockquote>
+<p><strong>为什么 Go 没有泛型类型？</strong></p>
+<p>一个<a target="_blank" rel="noopener" href="https://golang.org/issue/43651">实现泛型类型的形式语言的建议</a>已被接受列入语言。如果一切顺利，它将在 Go 1.18 版本中可用。</p>
+<p>Go 旨在作为一种编写服务器程序的语言，这些程序随着时间的推移易于维护。（有关更多背景信息，请参阅<a target="_blank" rel="noopener" href="https://talks.golang.org/2012/splash.article">此文章</a>。）设计集中在可伸缩性、可读性和并发性等方面。多态编程在当时似乎对语言的目标并不重要，因此为了简单起见被排除在外。</p>
+<p>该语言现在更加成熟，可以考虑某种形式的泛型编程。但是，仍然存在一些警告。</p>
+<p>泛型很方便，但它们的代价是类型系统和运行时的复杂性。我们还没有找到一种设计，其价值与复杂性成正比，尽管我们仍在继续思考。同时，Go 的内置映射和切片，以及使用空接口构造容器（显式拆箱）的能力意味着在许多情况下，如果不太顺利的话，可以编写执行泛型支持的代码。</p>
+<p>话题保持开放。要查看之前为 Go 设计良好泛型解决方案的几次失败尝试，请参阅 <a target="_blank" rel="noopener" href="https://golang.org/issue/15292">此提案</a>。</p>
+</blockquote>
+<p>官方的这句话在1年前不是这样写的，原文是这样：</p>
+<blockquote>
+<p>Why does Go not have generic types?<br>Generics may well be added at some point. We don’t feel an urgency for them.Generics are convenient but they come at a cost in complexity in the type system and run-time…<br>Meanwhile, Go’s built-in maps and slices, plus the ability to use the empty interface to construct containers mean in many cases it is possible to write code that does what generics would enable, if less smoothly.</p>
+<p>在某些时候很可能会添加泛型。我们对它们并不感到紧迫。泛型很方便，但它们的代价是类型系统和运行时的复杂性…… 同时，Go 的内置映射和切片，以及使用空接口构建容器的能力意味着在许多情况下，可以编写执行泛型支持的代码。</p>
+</blockquote>
+<p>这里也可以看到Go官方也在不断的推翻自己，能提高编码效率的语言才是好语言，诚意满满。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/gopherchina/conference/blob/master/2017/1.4%20interface.presented.pdf">https://github.com/gopherchina/conference/blob/master/2017/1.4%20interface.presented.pdf</a> Gopher China 2017 PPT</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Interface">https://en.wikipedia.org/wiki/Interface</a> 维基百科-interface</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Object-oriented_programming">https://en.wikipedia.org/wiki/Object-oriented_programming</a> 维基百科-OOP</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Polymorphism_(computer_science)">https://en.wikipedia.org/wiki/Polymorphism_(computer_science)</a> 维基百科-多态</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/go101/go101">https://github.com/go101/go101</a> go101</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/gin-gonic/gin">https://github.com/gin-gonic/gin</a> 开源项目Gin</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/golang/go/tree/dev.boringcrypto.go1.16">https://github.com/golang/go/tree/dev.boringcrypto.go1.16</a> golang 1.16 部分源码</li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/i6448038/article/details/82916330">https://blog.csdn.net/i6448038/article/details/82916330</a> 图解Go语言interface底层实现</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/golang/" class="category-chain-item">golang</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/golang/">#golang</a>
+      
+        <a href="/tags/interface/">#interface</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Golang-Interface</div>
+      <div>https://lamber92.github.io/2021/07/05/golang/interface/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Lamber Chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2021年7月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-nc"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="ND - 禁止演绎">
+                    <i class="iconfont icon-nd"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/08/02/golang/pointer/" title="Golang-指针">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Golang-指针</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        pv: 
+        <span id="leancloud-site-pv"></span>
+         
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        uv: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
