@@ -391,7 +391,7 @@
 <li>【2】 <strong>base64.NewDecoder(base64.StdEncoding, r)</strong> <ul>
 <li>入参是一个<strong>io.Reader</strong> </li>
 <li>内部返回一个 <strong>*base64.newlineFilteringReader</strong> 指针对象</li>
-<li>在外部赋值给 **io.Reader **类型的r变量，此时外部 变量r <strong>首次被赋值</strong></li>
+<li>在外部赋值给 <strong>io.Reader</strong> 类型的r变量，此时外部 变量r <strong>首次被赋值</strong></li>
 </ul>
 </li>
 </ul>
@@ -401,7 +401,7 @@
 <li>【3】 <strong>gzip.NewReader(r)</strong><ul>
 <li>入参是一个 <strong>io.Reader</strong></li>
 <li>内部返回一个 <strong>*gunzip.Reader</strong> 指针对象</li>
-<li>在外部赋值给  **io.Reader **类型的r变量，此时外部 变量r <strong>又再次被赋值</strong></li>
+<li>在外部赋值给  <strong>io.Reader</strong> 类型的r变量，此时外部 变量r <strong>又再次被赋值</strong></li>
 </ul>
 </li>
 </ul>
