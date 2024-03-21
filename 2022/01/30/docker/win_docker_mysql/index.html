@@ -16,28 +16,30 @@
   <meta name="author" content="Lamber Chen">
   <meta name="keywords" content="">
   
-    <meta name="description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+    <meta name="description" content="简单记录使用docker-desktop部署mysql的关键流程。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Golang-资源泄露">
-<meta property="og:url" content="https://lamber92.github.io/2022/05/09/golang/leak/index.html">
+<meta property="og:title" content="Docker-Desktop 部署MySQL">
+<meta property="og:url" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/index.html">
 <meta property="og:site_name" content="Lamber的学习笔记">
-<meta property="og:description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+<meta property="og:description" content="简单记录使用docker-desktop部署mysql的关键流程。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak_profile.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_1.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_profile_1.png">
-<meta property="article:published_time" content="2022-05-09T13:01:37.000Z">
-<meta property="article:modified_time" content="2023-02-28T12:05:32.000Z">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/search.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/run.jpg">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/env.jpg">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/opt.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/run_log.png">
+<meta property="og:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/run_status.jpg">
+<meta property="article:published_time" content="2022-01-30T13:10:00.000Z">
+<meta property="article:modified_time" content="2022-01-30T13:10:00.000Z">
 <meta property="article:author" content="Lamber Chen">
-<meta property="article:tag" content="golang">
-<meta property="article:tag" content="pprof">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="docker-desktop">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
+<meta name="twitter:image" content="https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/search.png">
   
   
   
-  <title>Golang-资源泄露 - Lamber的学习笔记</title>
+  <title>Docker-Desktop 部署MySQL - Lamber的学习笔记</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -212,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Golang-资源泄露"></span>
+            <span id="subtitle" data-typed-text="Docker-Desktop 部署MySQL"></span>
           
         </div>
 
@@ -223,8 +225,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-05-09 21:01" pubdate>
-          2022年5月9日 晚上
+        <time datetime="2022-01-30 21:10" pubdate>
+          2022年1月30日 晚上
         </time>
       </span>
     
@@ -235,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.1k 字
+          275 字
         
       </span>
     
@@ -296,65 +298,43 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Golang-资源泄露</h1>
+            <h1 style="display: none">Docker-Desktop 部署MySQL</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="Golang-资源泄露"><a href="#Golang-资源泄露" class="headerlink" title="Golang-资源泄露"></a>Golang-资源泄露</h1><p align="right">Lamber</p>
-<p align="right">2022-05-09</p>
+                <h1 id="Docker-Desktop-部署MySQL"><a href="#Docker-Desktop-部署MySQL" class="headerlink" title="Docker-Desktop 部署MySQL"></a>Docker-Desktop 部署MySQL</h1><p align="right">Lamber</p>
+<p align="right">2022-01-30</p>
 
-
-
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。</p>
-<h2 id="1-HTTP-Body泄露（2022-05-09）"><a href="#1-HTTP-Body泄露（2022-05-09）" class="headerlink" title="1. HTTP-Body泄露（2022-05-09）"></a>1. HTTP-Body泄露（2022-05-09）</h2><ul>
-<li><p>运维监控发现生产环境某服务所有节点出现OOM现象，但预发布、测试环境未出现该现象，初步判断内存泄露与请求数成正比关系。但该服务同时承载HTTP与gRPC请求，需要进一步排查。</p>
+<blockquote>
+<p>本篇故意尽量使用UI界面交互替代docker命令，达到最终部署目的。</p>
+</blockquote>
+<h1 id="1-拉取MySQL镜像"><a href="#1-拉取MySQL镜像" class="headerlink" title="1. 拉取MySQL镜像"></a>1. 拉取MySQL镜像</h1><ul>
+<li><p>搜索关键字，选择官方镜像，选择最新版本 (本地调试使用，因此使用最新版)：</p>
+<p><img src="search.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ul>
+<h1 id="2-创建容器"><a href="#2-创建容器" class="headerlink" title="2. 创建容器"></a>2. 创建容器</h1><ul>
+<li><p>找到刚刚拉取完成的镜像，点击运行按钮</p>
+<p><img src="run.jpg" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>接下来是填写容器名称、环境变量</p>
 <ul>
-<li>下图5月7日内存泄露现象。</li>
+<li>可以先对照dockerhub上对应镜像说明中的配置信息，选择自己需要的填</li>
+<li>镜像说明地址：<a target="_blank" rel="noopener" href="https://hub.docker.com/_/mysql">https://hub.docker.com/_/mysql</a></li>
 </ul>
-</li>
-</ul>
-<p><img src="buffer_leak.jpg" srcset="/img/loading.gif" lazyload></p>
+<p><img src="env.jpg" srcset="/img/loading.gif" lazyload></p>
 <ul>
-<li><p>使用pprof工具采集测试环境服务内存使用信息，将采集后的信息下载到本地稍后分析。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -G &lt;被测服务域名&gt;/debug/pprof/heap &gt; heap.profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
+<li>按需填写这几项，然后点击”Run”按钮。</li>
 </ul>
-<p><img src="buffer_leak_profile.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>由图中可以发现http的newBufioReader后续操作存在内存泄露，查代码发现在http中间件中有对Body数据重置的情况，但没有关闭io.Reader，因此造成内存泄露。修复方法如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>    _ = c.Request.Body.Close()<br>    c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))<br>&#125;()<br></code></pre></td></tr></table></figure>
+<p><img src="opt.png" srcset="/img/loading.gif" lazyload></p>
 </li>
-<li><p>但是光懂得Close()还不够，要理解为什么原来的Body没有被释放，这里涉及到bytes.Buffer的内部实现，在另外的文章记录。</p>
+<li><p>查看容器日志</p>
+<p><img src="run_log.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="run_status.jpg" srcset="/img/loading.gif" lazyload></p>
 </li>
 </ul>
-<h2 id="2-定时器泄露（2023-02-27）"><a href="#2-定时器泄露（2023-02-27）" class="headerlink" title="2. 定时器泄露（2023-02-27）"></a>2. 定时器泄露（2023-02-27）</h2><ul>
-<li>运维监控发现生产环境某2个微服务的cpu有持续上升趋势，并在测试环境中有相同的现象，初步判断是有某种工具泄露。<ul>
-<li>下图2月28日前的cpu占用率是未修复前的现象，乘持续上升趋势，且该服务没有cpu密集型任务。27日下午修复后CPU占用率恢复正常。</li>
-</ul>
-</li>
-</ul>
-<p><img src="timer_leak_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>使用pprof工具采集测试环境服务30秒的CPU使用信息，将采集后的信息下载到本地稍后分析。</p>
-<ul>
-<li>我们的服务内嵌了pprof，使用白名单方式做安全限制。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl &lt;被测服务域名&gt;/debug/pprof/profile --output ./profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="timer_leak_profile_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li>从图中发现占了86%CPU资源的是定时器，没有其他更有价值的线索了。并且只有2个服务出现该情况，排除是三方库导致的问题。于是定位该服务中所有使用定时器的地方。于是发现有一处代码循环创建定时器： <strong>time.NewTimer()</strong> ，但没有调用 <strong>Stop()</strong> 方法。<ul>
-<li>解决方式比较简单，使用 <strong>Reset()</strong> 方法每次重试定时器即可，这里不列出代码了；</li>
-<li>相对于解决问题，认识定时器内部实现还比较重要。</li>
-</ul>
-</li>
-</ul>
+<h1 id="3-连接测试"><a href="#3-连接测试" class="headerlink" title="3. 连接测试"></a>3. 连接测试</h1><p>用Navicat连一下就行</p>
 
                 
               </div>
@@ -373,7 +353,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/golang/" class="category-chain-item">golang</a>
+  <a href="/categories/docker/" class="category-chain-item">docker</a>
   
   
 
@@ -388,9 +368,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/golang/">#golang</a>
+        <a href="/tags/docker/">#docker</a>
       
-        <a href="/tags/pprof/">#pprof</a>
+        <a href="/tags/docker-desktop/">#docker-desktop</a>
       
     </div>
   
@@ -402,8 +382,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Golang-资源泄露</div>
-      <div>https://lamber92.github.io/2022/05/09/golang/leak/</div>
+      <div>Docker-Desktop 部署MySQL</div>
+      <div>https://lamber92.github.io/2022/01/30/docker/win_docker_mysql/</div>
     </div>
     <div class="license-meta">
       
@@ -415,7 +395,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年5月9日</div>
+          <div>2022年1月30日</div>
         </div>
       
       
@@ -459,9 +439,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/05/23/golang/error/" title="Golang-Error处理">
+                      <a href="/2022/05/09/golang/leak/" title="Golang-资源泄露">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Golang-Error处理</span>
+                        <span class="hidden-mobile">Golang-资源泄露</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -469,8 +449,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/01/30/docker/win_docker_mysql/" title="Docker-Desktop 部署MySQL">
-                        <span class="hidden-mobile">Docker-Desktop 部署MySQL</span>
+                      <a href="/2022/01/30/docker/win_docker/" title="Windows下Docker-Desktop使用笔记">
+                        <span class="hidden-mobile">Windows下Docker-Desktop使用笔记</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
