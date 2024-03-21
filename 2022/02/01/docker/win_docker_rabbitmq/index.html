@@ -16,28 +16,26 @@
   <meta name="author" content="Lamber Chen">
   <meta name="keywords" content="">
   
-    <meta name="description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+    <meta name="description" content="简单记录使用docker部署rabbitmq的关键流程。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Golang-资源泄露">
-<meta property="og:url" content="https://lamber92.github.io/2022/05/09/golang/leak/index.html">
+<meta property="og:title" content="Docker部署RabbitMQ">
+<meta property="og:url" content="https://lamber92.github.io/2022/02/01/docker/win_docker_rabbitmq/index.html">
 <meta property="og:site_name" content="Lamber的学习笔记">
-<meta property="og:description" content="主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。">
+<meta property="og:description" content="简单记录使用docker部署rabbitmq的关键流程。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak_profile.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_1.png">
-<meta property="og:image" content="https://lamber92.github.io/2022/05/09/golang/leak/timer_leak_profile_1.png">
-<meta property="article:published_time" content="2022-05-09T13:01:37.000Z">
-<meta property="article:modified_time" content="2023-02-28T12:05:32.000Z">
+<meta property="og:image" content="https://lamber92.github.io/2022/02/01/docker/win_docker_rabbitmq/pull.jpg">
+<meta property="og:image" content="https://lamber92.github.io/2022/02/01/docker/win_docker_rabbitmq/opt.png">
+<meta property="article:published_time" content="2022-02-01T13:10:00.000Z">
+<meta property="article:modified_time" content="2022-02-01T13:10:00.000Z">
 <meta property="article:author" content="Lamber Chen">
-<meta property="article:tag" content="golang">
-<meta property="article:tag" content="pprof">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="docker-desktop">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://lamber92.github.io/2022/05/09/golang/leak/buffer_leak.jpg">
+<meta name="twitter:image" content="https://lamber92.github.io/2022/02/01/docker/win_docker_rabbitmq/pull.jpg">
   
   
   
-  <title>Golang-资源泄露 - Lamber的学习笔记</title>
+  <title>Docker部署RabbitMQ - Lamber的学习笔记</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -212,7 +210,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Golang-资源泄露"></span>
+            <span id="subtitle" data-typed-text="Docker部署RabbitMQ"></span>
           
         </div>
 
@@ -223,8 +221,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-05-09 21:01" pubdate>
-          2022年5月9日 晚上
+        <time datetime="2022-02-01 21:10" pubdate>
+          2022年2月1日 晚上
         </time>
       </span>
     
@@ -296,65 +294,56 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Golang-资源泄露</h1>
+            <h1 style="display: none">Docker部署RabbitMQ</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="Golang-资源泄露"><a href="#Golang-资源泄露" class="headerlink" title="Golang-资源泄露"></a>Golang-资源泄露</h1><p align="right">Lamber</p>
-<p align="right">2022-05-09</p>
+                <h1 id="Docker部署RabbitMQ"><a href="#Docker部署RabbitMQ" class="headerlink" title="Docker部署RabbitMQ"></a>Docker部署RabbitMQ</h1><p align="right">Lamber</p>
+<p align="right">2021-07-12</p>
 
+<blockquote>
+<p>本篇故意尽量使用UI界面交互替代docker命令，达到最终部署目的。</p>
+</blockquote>
+<h1 id="1-拉取镜像"><a href="#1-拉取镜像" class="headerlink" title="1. 拉取镜像"></a>1. 拉取镜像</h1><ul>
+<li><p>搜索关键字，选择官方镜像，选择最新版本 (本地调试使用，因此使用最新版)：</p>
+<p><img src="pull.jpg" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ul>
+<h1 id="2-创建容器"><a href="#2-创建容器" class="headerlink" title="2. 创建容器"></a>2. 创建容器</h1><ul>
+<li><p>找到刚刚拉取完成的镜像，点击运行按钮</p>
+</li>
+<li><p>填写环境变量</p>
+<ul>
+<li><strong>RABBITMQ_DEFAULT_USER</strong>：管理后台用户名</li>
+<li><strong>RABBITMQ_DEFAULT_PASS</strong>：管理后台初始密码</li>
+</ul>
+<p><img src="opt.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+</ul>
+<h1 id="3-连接测试"><a href="#3-连接测试" class="headerlink" title="3. 连接测试"></a>3. 连接测试</h1><p>访问 <a target="_blank" rel="noopener" href="http://localhost:15672/">http://localhost:15672</a> 访问后台管理界面，不赘述。</p>
+<h1 id="4-安装插件"><a href="#4-安装插件" class="headerlink" title="4. 安装插件"></a>4. 安装插件</h1><h2 id="4-1-延迟队列插件"><a href="#4-1-延迟队列插件" class="headerlink" title="4.1 延迟队列插件"></a>4.1 延迟队列插件</h2><p>又称死信队列插件，直接到官网下载对应版本的插件：<a target="_blank" rel="noopener" href="https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases">开源项目地址</a></p>
+<ul>
+<li>先进容器内看一下插件目录的路径：<ul>
+<li>发现就在根目录下</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">docker <span class="hljs-built_in">exec</span> -it rabbitmq_local_dev /bin/bash</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">输出：</span><br>...... plugins ......<br></code></pre></td></tr></table></figure>
 
+<ul>
+<li>退出到宿主机，将插件拷贝到容器的插件目录中：</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">docker <span class="hljs-built_in">cp</span> .\rabbitmq_delayed_message_exchange-3.12.0.ez rabbitmq_local_dev:/plugins</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">输出：</span><br>Successfully copied 50.2kB to rabbitmq_local_dev:\opt\rabbitmq\plugins<br></code></pre></td></tr></table></figure>
 
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇主要记录一些生产环境中遇到的各种资源问题，及对应的排查、解决方法。</p>
-<h2 id="1-HTTP-Body泄露（2022-05-09）"><a href="#1-HTTP-Body泄露（2022-05-09）" class="headerlink" title="1. HTTP-Body泄露（2022-05-09）"></a>1. HTTP-Body泄露（2022-05-09）</h2><ul>
-<li><p>运维监控发现生产环境某服务所有节点出现OOM现象，但预发布、测试环境未出现该现象，初步判断内存泄露与请求数成正比关系。但该服务同时承载HTTP与gRPC请求，需要进一步排查。</p>
 <ul>
-<li>下图5月7日内存泄露现象。</li>
+<li>再次进入容器，执行加载插件命令：<ul>
+<li>执行后会显示加载成功的信息</li>
 </ul>
 </li>
 </ul>
-<p><img src="buffer_leak.jpg" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>使用pprof工具采集测试环境服务内存使用信息，将采集后的信息下载到本地稍后分析。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl -G &lt;被测服务域名&gt;/debug/pprof/heap &gt; heap.profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="buffer_leak_profile.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>由图中可以发现http的newBufioReader后续操作存在内存泄露，查代码发现在http中间件中有对Body数据重置的情况，但没有关闭io.Reader，因此造成内存泄露。修复方法如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">defer</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>    _ = c.Request.Body.Close()<br>    c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))<br>&#125;()<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>但是光懂得Close()还不够，要理解为什么原来的Body没有被释放，这里涉及到bytes.Buffer的内部实现，在另外的文章记录。</p>
-</li>
-</ul>
-<h2 id="2-定时器泄露（2023-02-27）"><a href="#2-定时器泄露（2023-02-27）" class="headerlink" title="2. 定时器泄露（2023-02-27）"></a>2. 定时器泄露（2023-02-27）</h2><ul>
-<li>运维监控发现生产环境某2个微服务的cpu有持续上升趋势，并在测试环境中有相同的现象，初步判断是有某种工具泄露。<ul>
-<li>下图2月28日前的cpu占用率是未修复前的现象，乘持续上升趋势，且该服务没有cpu密集型任务。27日下午修复后CPU占用率恢复正常。</li>
-</ul>
-</li>
-</ul>
-<p><img src="timer_leak_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li><p>使用pprof工具采集测试环境服务30秒的CPU使用信息，将采集后的信息下载到本地稍后分析。</p>
-<ul>
-<li>我们的服务内嵌了pprof，使用白名单方式做安全限制。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">curl &lt;被测服务域名&gt;/debug/pprof/profile --output ./profile<br></code></pre></td></tr></table></figure>
-</li>
-<li><p>使用go工具链绘制调用流程图。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">go tool pprof -http :8111 ./profile<br></code></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="timer_leak_profile_1.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li>从图中发现占了86%CPU资源的是定时器，没有其他更有价值的线索了。并且只有2个服务出现该情况，排除是三方库导致的问题。于是定位该服务中所有使用定时器的地方。于是发现有一处代码循环创建定时器： <strong>time.NewTimer()</strong> ，但没有调用 <strong>Stop()</strong> 方法。<ul>
-<li>解决方式比较简单，使用 <strong>Reset()</strong> 方法每次重试定时器即可，这里不列出代码了；</li>
-<li>相对于解决问题，认识定时器内部实现还比较重要。</li>
-</ul>
-</li>
-</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">$ </span><span class="language-bash">docker <span class="hljs-built_in">exec</span> -it rabbitmq_local_dev /bin/bash</span><br><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> plugins</span><br><span class="hljs-meta prompt_">$ </span><span class="language-bash">rabbitmq-plugins <span class="hljs-built_in">enable</span> rabbitmq_delayed_message_exchange</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">输出：</span><br>Enabling plugins on node rabbit@62cee4d466a5:<br>rabbitmq_delayed_message_exchange<br>The following plugins have been configured:<br>  rabbitmq_delayed_message_exchange<br>  rabbitmq_management<br>  rabbitmq_management_agent<br>  rabbitmq_prometheus<br>  rabbitmq_web_dispatch<br>Applying plugin configuration to rabbit@62cee4d466a5...<br>The following plugins have been enabled:<br>  rabbitmq_delayed_message_exchange<br><br>started 1 plugins.<br></code></pre></td></tr></table></figure>
+
 
                 
               </div>
@@ -373,7 +362,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/golang/" class="category-chain-item">golang</a>
+  <a href="/categories/docker/" class="category-chain-item">docker</a>
   
   
 
@@ -388,9 +377,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/golang/">#golang</a>
+        <a href="/tags/docker/">#docker</a>
       
-        <a href="/tags/pprof/">#pprof</a>
+        <a href="/tags/docker-desktop/">#docker-desktop</a>
       
     </div>
   
@@ -402,8 +391,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Golang-资源泄露</div>
-      <div>https://lamber92.github.io/2022/05/09/golang/leak/</div>
+      <div>Docker部署RabbitMQ</div>
+      <div>https://lamber92.github.io/2022/02/01/docker/win_docker_rabbitmq/</div>
     </div>
     <div class="license-meta">
       
@@ -415,7 +404,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年5月9日</div>
+          <div>2022年2月1日</div>
         </div>
       
       
@@ -459,9 +448,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/05/23/golang/error/" title="Golang-Error处理">
+                      <a href="/2022/02/16/docker/win_docker_apollo/" title="Docker部署Apollo">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Golang-Error处理</span>
+                        <span class="hidden-mobile">Docker部署Apollo</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -469,8 +458,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/02/16/docker/win_docker_apollo/" title="Docker部署Apollo">
-                        <span class="hidden-mobile">Docker部署Apollo</span>
+                      <a href="/2022/01/30/docker/win_docker_mysql/" title="Docker部署MySQL">
+                        <span class="hidden-mobile">Docker部署MySQL</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
