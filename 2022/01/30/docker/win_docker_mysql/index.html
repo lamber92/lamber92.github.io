@@ -237,7 +237,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          275 字
+          1.1k 字
         
       </span>
     
@@ -309,7 +309,7 @@
 <blockquote>
 <p>本篇故意尽量使用UI界面交互替代docker命令，达到最终部署目的。</p>
 </blockquote>
-<h1 id="1-拉取MySQL镜像"><a href="#1-拉取MySQL镜像" class="headerlink" title="1. 拉取MySQL镜像"></a>1. 拉取MySQL镜像</h1><ul>
+<h1 id="1-拉取镜像"><a href="#1-拉取镜像" class="headerlink" title="1. 拉取镜像"></a>1. 拉取镜像</h1><ul>
 <li><p>搜索关键字，选择官方镜像，选择最新版本 (本地调试使用，因此使用最新版)：</p>
 <p><img src="search.png" srcset="/img/loading.gif" lazyload></p>
 </li>
@@ -334,7 +334,22 @@
 <p><img src="run_status.jpg" srcset="/img/loading.gif" lazyload></p>
 </li>
 </ul>
-<h1 id="3-连接测试"><a href="#3-连接测试" class="headerlink" title="3. 连接测试"></a>3. 连接测试</h1><p>用Navicat连一下就行</p>
+<h1 id="3-连接测试"><a href="#3-连接测试" class="headerlink" title="3. 连接测试"></a>3. 连接测试</h1><p>上面配置已经将3306端口映射到宿主机，在宿主机用Navicat连一下就行，不赘述。</p>
+<h1 id="4-绑定自定义网络"><a href="#4-绑定自定义网络" class="headerlink" title="4. 绑定自定义网络"></a>4. 绑定自定义网络</h1><p>这一步是为了能将Mysql的端口映射到docker子网内，给其他需要依赖Mysql的服务提供一个稳定的ip地址，并且形成网络隔离</p>
+<p>这个没办法在Docker-Desktop上操作，打开终端</p>
+<ul>
+<li><p>先查看当前有哪些网络</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker network ls<br><span class="hljs-meta prompt_">#</span><span class="language-bash">输出结果：</span><br>NETWORK ID     NAME      DRIVER    SCOPE<br>ed62ff1026a9   bridge    bridge    local<br>add5e307074b   host      host      local<br>dd4d1ab7d259   none      null      local<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>看到有 <strong>bridge</strong> 属性的网络，看看哪些容器已经绑定到该网络上</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker network inspect bridge<br><span class="hljs-meta prompt_">#</span><span class="language-bash">输出结果：</span><br>......<br>        &quot;Containers&quot;: &#123;<br>            &quot;f54bcb7c26b772a8698b8c50e003300f5219738f1a672708a129533d27609fd0&quot;: &#123;<br>                &quot;Name&quot;: &quot;mysql_local_dev&quot;,<br>                &quot;EndpointID&quot;: &quot;657e7406893382a3bdfab03429fbd0f063949e28e9008d7d1e25d761f6df63f1&quot;,<br>                &quot;MacAddress&quot;: &quot;02:42:ac:11:00:02&quot;,<br>                &quot;IPv4Address&quot;: &quot;172.17.0.2/16&quot;,<br>                &quot;IPv6Address&quot;: &quot;&quot;<br>            &#125;<br>        &#125;,<br>......<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>通过这个信息，已经确认 <strong>mysql_local_dev</strong> 已经绑定到 <strong>bridge</strong> 中，无需再另外创建；</li>
+<li>mysql 在 <strong>bridge</strong> 中的ip地址是 <strong>172.17.0.2</strong> 。</li>
+</ul>
+</li>
+</ul>
 
                 
               </div>
@@ -439,9 +454,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/05/09/golang/leak/" title="Golang-资源泄露">
+                      <a href="/2022/02/16/docker/win_docker_apollo/" title="Docker-Desktop 部署Apollo">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Golang-资源泄露</span>
+                        <span class="hidden-mobile">Docker-Desktop 部署Apollo</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
