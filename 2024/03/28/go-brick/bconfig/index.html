@@ -1,0 +1,809 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" >
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/icon.jpg">
+  <link rel="icon" href="/img/icon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Lamber Chen">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="go-brick-bconfig的使用说明">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go-brick配置加载-bconfig">
+<meta property="og:url" content="https://lamber92.github.io/2024/03/28/go-brick/bconfig/index.html">
+<meta property="og:site_name" content="Lamber的学习笔记">
+<meta property="og:description" content="go-brick-bconfig的使用说明">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lamber92.github.io/2024/03/28/go-brick/bconfig/apollo.jpg">
+<meta property="article:published_time" content="2024-03-28T12:00:00.000Z">
+<meta property="article:modified_time" content="2024-03-28T12:00:00.000Z">
+<meta property="article:author" content="Lamber Chen">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="go-brick">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lamber92.github.io/2024/03/28/go-brick/bconfig/apollo.jpg">
+  
+  
+  
+  <title>go-brick配置加载-bconfig - Lamber的学习笔记</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"lamber92.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":3},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"zPUsZUPeBQSuuuPubrF7oUya-gzGzoHsz","app_key":"Ru7EOypuGHkIcmxERkIJ26Cv","server_url":"https://zpuszupe.lc-cn-n1-shared.com","path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Lamber的学习笔记</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/god_of_war.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="go-brick配置加载-bconfig"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-28 20:00" pubdate>
+          2024年3月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.1k 字
+        
+      </span>
+    
+
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">go-brick配置加载-bconfig</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="go-brick-bconfig"><a href="#go-brick-bconfig" class="headerlink" title="go-brick-bconfig"></a>go-brick-bconfig</h1><p align="right">Lamber</p>
+<p align="right">2024-03-28</p>
+
+
+
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本篇基于go-brick beta版本功能进行阐述，后续如果有版本迭代会适时更新；</p>
+<p>go-brick-bconfig的前身工作于中型企业业务集群，能满足多环境、多集群下的配置使用要求，因而有一定的复杂度。</p>
+<h1 id="1-载体"><a href="#1-载体" class="headerlink" title="1. 载体"></a>1. 载体</h1><h2 id="1-1-环境变量"><a href="#1-1-环境变量" class="headerlink" title="1.1 环境变量"></a>1.1 环境变量</h2><p>环境变量被视为配置的一种，归属于benv，隶属于bconfig；</p>
+<p>在bconfig中，服务所在环境通过读取环境变量 <strong>GO_ENV_NAME</strong> 获取，是强依赖配置；支持的值有以下常见的几种；</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">const</span> (<br>	DEV Type = <span class="hljs-string">&quot;dev&quot;</span> <span class="hljs-comment">// Development environment</span><br>	FAT Type = <span class="hljs-string">&quot;fat&quot;</span> <span class="hljs-comment">// Factory Acceptance Test environment</span><br>	SIT Type = <span class="hljs-string">&quot;sit&quot;</span> <span class="hljs-comment">// System Integration Test environment</span><br>	UAT Type = <span class="hljs-string">&quot;uat&quot;</span> <span class="hljs-comment">// User Acceptance Test environment</span><br>	PRO Type = <span class="hljs-string">&quot;pro&quot;</span> <span class="hljs-comment">// Production environment</span><br>)<br></code></pre></td></tr></table></figure>
+
+<h2 id="1-2-私有配置"><a href="#1-2-私有配置" class="headerlink" title="1.2 私有配置"></a>1.2 私有配置</h2><p>私有配置，用于存储业务服务中自己所需的独有配置；当然这只是视绝大部分情况而言，存在多服务间共享配置的场景；</p>
+<h3 id="1-2-1-类型"><a href="#1-2-1-类型" class="headerlink" title="1.2.1 类型"></a>1.2.1 类型</h3><p>当前，私有配置只支持两种载体：</p>
+<ul>
+<li><p><strong>yaml文件</strong></p>
+<ul>
+<li>常用的配置文件格式，归属于bstorage包，隶属于bconfig；</li>
+</ul>
+</li>
+<li><p><strong>Apollo配置中心</strong></p>
+<ul>
+<li>老炮的配置中心服务，归属于bstorage包，隶属于bconfig；</li>
+<li>Why Apollo？<ul>
+<li>Apollo自带后台管理系统，Web界面简单易用，这点和目前Go实现的开源配置中心对比起来，是很大的优势；<ul>
+<li>并且一套管理后台可管理多套环境配置，并可跨环境同步配置，配合适当的CICD流程，能极大提高运维部署效率；</li>
+</ul>
+</li>
+<li>Apollo提供了灵活的权限管理机制，可以对不同用户或团队进行配置的访问和修改权限控制，保障配置的安全性和可控性；</li>
+<li>Apollo易于集成，对旧系统使用的老牌语言有较好的支持；</li>
+<li><del>我以前工作的公司有比较深的Apollo使用经验和运维经验（┓( ´∀&#96; )┏）；</del></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>争取以后能支持更多好用的配置控制平台（ε&#x3D;(´ο｀*)))唉）</p>
+<h3 id="1-2-2-路径"><a href="#1-2-2-路径" class="headerlink" title="1.2.2 路径"></a>1.2.2 路径</h3><ul>
+<li><p><strong>静态配置</strong></p>
+<p>  静态配置，即在程序生命周期中不会触发热更新的配置。例如数据库连接配置、服务日志输出模式等。</p>
+<p>  在bconfig库中，强制要求将这里配置存放在 *&#x2F;static 目录下。例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">myproject<br>└─config<br>  └─static<br>    └─dev.yaml<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>动态配置</strong></p>
+<p>  动态配置，即在程序生命周期中会触发热更新的配置。例如业务AB测比例、轮播图图源等。</p>
+<p>  在bconfig库中，强制要求将这里配置存放在 *&#x2F;dynamic 目录下。例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">myproject<br>└─config<br>  └─dynamic<br>    └─dev.yaml<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="2-快速开始"><a href="#2-快速开始" class="headerlink" title="2. 快速开始"></a>2. 快速开始</h1><p>这个示例使用yaml配置文件演示，使用Apollo配置中心请看下一章节。</p>
+<h2 id="2-1-添加环境变量"><a href="#2-1-添加环境变量" class="headerlink" title="2.1 添加环境变量"></a>2.1 添加环境变量</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">export GO_ENV_NAME=dev<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-2-配置go-mod"><a href="#2-2-配置go-mod" class="headerlink" title="2.2 配置go.mod"></a>2.2 配置go.mod</h2><figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs tex">replace github.com/apolloconfig/agollo/v4 =&gt; github.com/lamber92/agollo/v4 v4.3.2<br>require github.com/lamber92/go-brick v0.0.2-beta<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="2-3-添加配置文件"><a href="#2-3-添加配置文件" class="headerlink" title="2.3 添加配置文件"></a>2.3 添加配置文件</h2><p>这里以yaml文件作为示例</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs shell">TestConfig:<br>  A: &quot;123456&quot;<br>  B: 123456<br>  C:<br>    - &quot;xxxxxxxxxx&quot;<br>    - &quot;yyyyyyyyyy&quot;<br>  D: 3m<br>  E:<br>    E1: &quot;iii&quot;<br>    E2: &quot;jjj&quot;<br></code></pre></td></tr></table></figure>
+
+<p>将配置命名为 <strong>config.yaml</strong> ，保存到项目 <strong>.&#x2F;config&#x2F;static</strong> 目录下；</p>
+<p>复制一份相同的文件到项目 <strong>.&#x2F;config&#x2F;dynamic</strong> 目录下；</p>
+<h2 id="2-4-读取静态配置"><a href="#2-4-读取静态配置" class="headerlink" title="2.4 读取静态配置"></a>2.4 读取静态配置</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;context&quot;</span><br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;github.com/lamber92/go-brick/bconfig&quot;</span><br>	<span class="hljs-string">&quot;github.com/lamber92/go-brick/bconfig/bstorage&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	bconfig.Init(bconfig.Option&#123;<br>		Type:      bstorage.YAML,<br>		ConfigDir: <span class="hljs-string">&quot;./config&quot;</span>,<br>	&#125;)<br>	v, err := bconfig.Static().Load(context.Background(), <span class="hljs-string">&quot;TestConfig&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>	fmt.Println(v.GetString(<span class="hljs-string">&quot;A&quot;</span>))<br>	fmt.Println(v.GetInt(<span class="hljs-string">&quot;B&quot;</span>))<br>	fmt.Println(v.GetStringSlice(<span class="hljs-string">&quot;C&quot;</span>))<br>	fmt.Println(v.GetDuration(<span class="hljs-string">&quot;D&quot;</span>))<br>	fmt.Println(v.Sub(<span class="hljs-string">&quot;E&quot;</span>).GetString(<span class="hljs-string">&quot;E1&quot;</span>))<br>	fmt.Println(v.Sub(<span class="hljs-string">&quot;E&quot;</span>).GetString(<span class="hljs-string">&quot;E2&quot;</span>))<br>	fmt.Println(v.GetStringMap(<span class="hljs-string">&quot;E&quot;</span>))<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs tex">123456<br>123456<br>[xxxxxxxxxx yyyyyyyyyy]<br>3m0s<br>iii<br>jjj<br>map[e1:iii e2:jjj]<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-5-读取动态配置"><a href="#2-5-读取动态配置" class="headerlink" title="2.5 读取动态配置"></a>2.5 读取动态配置</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-keyword">import</span> (<br>	<span class="hljs-string">&quot;context&quot;</span><br>	<span class="hljs-string">&quot;fmt&quot;</span><br>	<span class="hljs-string">&quot;github.com/lamber92/go-brick/bconfig&quot;</span><br>	<span class="hljs-string">&quot;github.com/lamber92/go-brick/bconfig/bstorage&quot;</span><br>	<span class="hljs-string">&quot;time&quot;</span><br>)<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	bconfig.Init(bconfig.Option&#123;<br>		Type:      bstorage.YAML,<br>		ConfigDir: <span class="hljs-string">&quot;./config&quot;</span>,<br>	&#125;)<br>	v, err := bconfig.Dynamic().Load(context.Background(), <span class="hljs-string">&quot;TestConfig&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>	fmt.Println(v.GetStringSlice(<span class="hljs-string">&quot;C&quot;</span>))<br><br>	fmt.Println(<span class="hljs-string">&quot;--------------------------------&quot;</span>)<br>	time.Sleep(time.Second * <span class="hljs-number">30</span>)<br><br>	v, err = bconfig.Dynamic().Load(context.Background(), <span class="hljs-string">&quot;TestConfig&quot;</span>)<br>	<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>		<span class="hljs-built_in">panic</span>(err)<br>	&#125;<br>	fmt.Println(v.GetStringSlice(<span class="hljs-string">&quot;C&quot;</span>))<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在执行停顿的30秒内，将 <strong>.&#x2F;config&#x2F;dynamic&#x2F;config.yaml</strong> 中的 <strong>TestConfig.C[0]</strong> 从 <strong>“xxxxxxxxxx”</strong>  修改为 <strong>“1111111111”</strong></p>
+<p>等待输出结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">[xxxxxxxxxx yyyyyyyyyy]<br>--------------------------------<br>&#123;&quot;level&quot;:&quot;INFO&quot;,&quot;time&quot;:&quot;2024-03-29T15:02:43+08:00&quot;,&quot;type&quot;:&quot;INFRA&quot;,&quot;func&quot;:&quot;github.com/lamber92/go-brick/bconfig/bstorage/yaml.(*yamlConfig).onChange&quot;,&quot;msg&quot;:&quot;[EVENT] config change&quot;,&quot;event&quot;:&quot;WRITE         \&quot;F:\\\\Github\\\\go-brick-example\\\\config\\\\dynamic\\\\config.yaml\&quot;&quot;&#125;<br>&#123;&quot;level&quot;:&quot;INFO&quot;,&quot;time&quot;:&quot;2024-03-29T15:02:43+08:00&quot;,&quot;type&quot;:&quot;INFRA&quot;,&quot;func&quot;:&quot;github.com/lamber92/go-brick/bconfig/bstorage/yaml.(*yamlConfig).onChange&quot;,&quot;msg&quot;:&quot;[EVENT] config change&quot;,&quot;event&quot;:&quot;WRITE         \&quot;F:\\\\Github\\\\go-brick-example\\\\config\\\\dynamic\\\\config.yaml\&quot;&quot;&#125;<br>[1111111111 yyyyyyyyyy]<br></code></pre></td></tr></table></figure>
+
+<p>中间两段日志是配置变动触发的默认事件监听日志。</p>
+<h1 id="3-更多功能"><a href="#3-更多功能" class="headerlink" title="3. 更多功能"></a>3. 更多功能</h1><h2 id="3-1-获取环境变量"><a href="#3-1-获取环境变量" class="headerlink" title="3.1 获取环境变量"></a>3.1 获取环境变量</h2><p>当 <strong>bconfig.Init()</strong> 顺利完成后，可以调用以下方法获取当前环境信息。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs go">bconfig.Env().GetName()<br></code></pre></td></tr></table></figure>
+
+<p>当然还可以获取更多其他信息：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Env <span class="hljs-keyword">interface</span> &#123;<br>	<span class="hljs-comment">// GetType get environment type</span><br>	GetType() Type<br>	<span class="hljs-comment">// GetName get environment name</span><br>	GetName() <span class="hljs-type">string</span><br>	<span class="hljs-comment">// Get get environment value by key</span><br>	<span class="hljs-comment">// if the environment variable does not exist or its value is empty, an error will be returned.</span><br>	Get(key <span class="hljs-type">string</span>, fromCache ...<span class="hljs-type">bool</span>) (<span class="hljs-type">string</span>, <span class="hljs-type">error</span>)<br>	<span class="hljs-comment">// AllowDebug determine whether the current environment can be debugged</span><br>	AllowDebug() <span class="hljs-type">bool</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-2-自定义环境变量获取器"><a href="#3-2-自定义环境变量获取器" class="headerlink" title="3.2 自定义环境变量获取器"></a>3.2 自定义环境变量获取器</h2><p>如果你觉得默认的 <strong>env-getter</strong> 实现不符合所需，可以在调用 <strong>bconfig.Init()</strong> 前，调用以下方法实现自定义：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go">benv.RegisterEnvGetter(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> (benv.Env, <span class="hljs-type">error</span>) &#123;<br>	......<br>    <span class="hljs-keyword">return</span> getter, <span class="hljs-literal">nil</span><br>&#125;)<br>bconfig.Init(......)<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-3-使用Apollo配置中心"><a href="#3-3-使用Apollo配置中心" class="headerlink" title="3.3 使用Apollo配置中心"></a>3.3 使用Apollo配置中心</h2><h3 id="3-3-1-读取apollo配置"><a href="#3-3-1-读取apollo配置" class="headerlink" title="3.3.1 读取apollo配置"></a>3.3.1 读取apollo配置</h3><p>首先在apollo上创建对应的配置：</p>
+<p><img src="apollo.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>编写apollo连接配置信息，YAML格式：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">Apollo:</span><br>  <span class="hljs-attr">Host:</span> <span class="hljs-string">&quot;http://localhost:8080&quot;</span> <span class="hljs-comment"># 你的apollo-configserver地址</span><br>  <span class="hljs-attr">AppID:</span> <span class="hljs-string">&quot;go-brick-example&quot;</span>     <span class="hljs-comment"># apollo配置的appid，下面也是按需调整</span><br>  <span class="hljs-attr">Cluster:</span> <span class="hljs-string">&quot;dev&quot;</span><br>  <span class="hljs-attr">Namespace:</span> <span class="hljs-string">&quot;application&quot;</span>      <span class="hljs-comment"># apollo客户端被我修改过，支持动态加载指定的namespace，这里只配默认的application</span><br>  <span class="hljs-attr">IsBackup:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">Secret:</span> <span class="hljs-string">&quot;7635dbdc38c348079b7ad71cc6c*****&quot;</span><br>  <span class="hljs-attr">Label:</span> <span class="hljs-string">&quot;&quot;</span><br>  <span class="hljs-attr">SyncTimeout:</span> <span class="hljs-number">5</span><br></code></pre></td></tr></table></figure>
+
+<p>将配置文件命名为 <strong>${你需要连接的环境名}.yaml</strong> ，保存到项目 <strong>.&#x2F;config&#x2F;static</strong> 目录下，初始化 bconfig：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go">bconfig.Init(bconfig.Option&#123;<br>	Type:      bstorage.APOLLO,<br>	ConfigDir: <span class="hljs-string">&quot;./config&quot;</span>,<br>&#125;)<br>v, err := bconfig.Dynamic().Load(context.Background(), <span class="hljs-string">&quot;RabbitMQ.PublishSMS&quot;</span>, <span class="hljs-string">&quot;dev_apollo_config&quot;</span>)<br><span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>	<span class="hljs-built_in">panic</span>(err)<br>&#125;<br>fmt.Println(v.String())<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">...... 一些apollo连接日志</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">&#123;<span class="hljs-string">&quot;Url&quot;</span>:<span class="hljs-string">&quot;amqp://root:123456@localhost:5672/&quot;</span>,<span class="hljs-string">&quot;VHost&quot;</span>:<span class="hljs-string">&quot;test&quot;</span>,<span class="hljs-string">&quot;Type&quot;</span>:<span class="hljs-string">&quot;producer&quot;</span>,<span class="hljs-string">&quot;Extra&quot;</span>:&#123;<span class="hljs-string">&quot;Queue&quot;</span>:<span class="hljs-string">&quot;test_queue_1&quot;</span>,<span class="hljs-string">&quot;Exchange&quot;</span>:<span class="hljs-string">&quot;e.direct.test&quot;</span>,<span class="hljs-string">&quot;ExchangeType&quot;</span>:<span class="hljs-string">&quot;direct&quot;</span>,<span class="hljs-string">&quot;RoutingKey&quot;</span>:<span class="hljs-string">&quot;test_rabbitmq_producer_key_1&quot;</span>,<span class="hljs-string">&quot;Persistent&quot;</span>:<span class="hljs-literal">true</span>&#125;&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>与apollo上的配置一致</p>
+<h3 id="3-3-2-监听apollo配置变更"><a href="#3-3-2-监听apollo配置变更" class="headerlink" title="3.3.2 监听apollo配置变更"></a>3.3.2 监听apollo配置变更</h3><p>在 bconfig 初始化后，使用以下方式注册监听信息回调</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go">bconfig.Init(bconfig.Option&#123;<br>	Type:      bstorage.APOLLO,<br>	ConfigDir: <span class="hljs-string">&quot;./config&quot;</span>,<br>&#125;)<br>bconfig.Dynamic().RegisterOnChange(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(event <span class="hljs-type">string</span>)</span></span> &#123;<br>	fmt.Println(event)<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>回调中，event变量的内容示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>	<span class="hljs-attr">&quot;Namespace&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dev_apollo_config&quot;</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;NotificationID&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8</span><span class="hljs-punctuation">,</span><br>	<span class="hljs-attr">&quot;Changes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>		<span class="hljs-attr">&quot;TestKey&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>			<span class="hljs-attr">&quot;ChangeType&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;MODIFY&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;OldValue&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&#123;\&quot;A\&quot;:\&quot;123456\&quot;,\&quot;B\&quot;:123456,\&quot;C\&quot;:[\&quot;222222222\&quot;,\&quot;yyyyyyyyyy\&quot;],\&quot;D\&quot;:\&quot;3m\&quot;,\&quot;E\&quot;:&#123;\&quot;E1\&quot;:\&quot;iii\&quot;,\&quot;E2\&quot;:\&quot;jjj\&quot;&#125;&#125;&quot;</span><span class="hljs-punctuation">,</span><br>			<span class="hljs-attr">&quot;NewValue&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&#123;\&quot;A\&quot;:\&quot;123456\&quot;,\&quot;B\&quot;:123456,\&quot;C\&quot;:[\&quot;111111111\&quot;,\&quot;yyyyyyyyyy\&quot;],\&quot;D\&quot;:\&quot;3m\&quot;,\&quot;E\&quot;:&#123;\&quot;E1\&quot;:\&quot;iii\&quot;,\&quot;E2\&quot;:\&quot;jjj\&quot;&#125;&#125;&quot;</span><br>		<span class="hljs-punctuation">&#125;</span><br>	<span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>注意：如果是首次获取该namepace的配置，会回调一次全量配置新增事件，因为该事件是客户端侧加载apollo-configserver的行为。</p>
+<h2 id="3-4-解析结构化参数"><a href="#3-4-解析结构化参数" class="headerlink" title="3.4 解析结构化参数"></a>3.4 解析结构化参数</h2><p>使用2.3小节的配置示例，使用结构体对象接参：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs go">bconfig.Init(bconfig.Option&#123;<br>    Type:      bstorage.YAML,<br>    ConfigDir: <span class="hljs-string">&quot;./config&quot;</span>,<br>&#125;)<br>v, err := bconfig.Static().Load(context.Background(), <span class="hljs-string">&quot;TestConfig&quot;</span>)<br><span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;<br>    <span class="hljs-built_in">panic</span>(err)<br>&#125;<br><br><span class="hljs-keyword">type</span> TestKey <span class="hljs-keyword">struct</span> &#123;<br>    Axx <span class="hljs-type">string</span>        <span class="hljs-string">`mapstructure:&quot;A&quot;`</span><br>    Bxx <span class="hljs-type">int</span>           <span class="hljs-string">`mapstructure:&quot;B&quot;`</span><br>    Cxx []<span class="hljs-type">string</span>      <span class="hljs-string">`mapstructure:&quot;C&quot;`</span><br>    Dxx time.Duration <span class="hljs-string">`mapstructure:&quot;D&quot;`</span><br>    Exx <span class="hljs-keyword">struct</span> &#123;<br>        E1xx <span class="hljs-type">string</span> <span class="hljs-string">`mapstructure:&quot;E1&quot;`</span><br>        E2xx <span class="hljs-type">string</span> <span class="hljs-string">`mapstructure:&quot;E2&quot;`</span><br>    &#125; <span class="hljs-string">`mapstructure:&quot;E&quot;`</span><br>&#125;<br>testKey := TestKey&#123;&#125;<br>err = v.Unmarshal(&amp;testKey)<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-5-优雅退出"><a href="#3-5-优雅退出" class="headerlink" title="3.5 优雅退出"></a>3.5 优雅退出</h2><p>平滑地释放资源，对于使用配置中心时尤为重要，能够主动断开客户端与配置中心的底层连接，避免服务侧需要异常处理。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs go">bconfig.Close()<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-6-更多"><a href="#3-6-更多" class="headerlink" title="3.6 更多"></a>3.6 更多</h2><p>还有更多示例，请看源码中的单元测试哦~</p>
+<h1 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h1><ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/spf13/viper">https://github.com/spf13/viper</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/spf13/cast">https://github.com/spf13/cast</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/lamber92/agollo%EF%BC%88">https://github.com/lamber92/agollo（</a> <a target="_blank" rel="noopener" href="https://github.com/apolloconfig/agollo">agollo</a> 的魔改版）</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/json-iterator/go">https://github.com/json-iterator/go</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/uber-go/zap">https://github.com/uber-go/zap</a></p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/go-brick/" class="category-chain-item">go-brick</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/golang/">#golang</a>
+      
+        <a href="/tags/go-brick/">#go-brick</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>go-brick配置加载-bconfig</div>
+      <div>https://lamber92.github.io/2024/03/28/go-brick/bconfig/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Lamber Chen</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年3月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-nc"></i>
+                  </span>
+                </a>
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="ND - 禁止演绎">
+                    <i class="iconfont icon-nd"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/12/23/golang/project_gorm/" title="开源项目-GORM-使用记录">
+                        <span class="hidden-mobile">开源项目-GORM-使用记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        pv: 
+        <span id="leancloud-site-pv"></span>
+         
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        uv: 
+        <span id="leancloud-site-uv"></span>
+        
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
